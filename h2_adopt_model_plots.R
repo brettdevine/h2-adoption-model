@@ -24,27 +24,27 @@ ne_plot_simple <- function(curve_data, ne_data, plot_name = "ne-plot-simple.pdf"
         , "ks" = curve_data[, 2])
     df_ne <- data.frame("ne" = ne_data[, 1])
     # Begin the plot
-    ggplot2::ggplot(data = df_cu) +
-        ggplot2::geom_line(aes(x = s, y = s)
+    ggplot(data = df_cu) +
+        geom_line(aes(x = s, y = s)
                 , linetype = 2
                 , alpha = 0.7) +
-        ggplot2::geom_line(aes(x = s, y = ks)
+        geom_line(aes(x = s, y = ks)
                 , linetype = 1
                 , linewidth = 1.5
                 , color = "aquamarine3") +
-        ggplot2::geom_point(data = ne_data
+        geom_point(data = ne_data
                 , aes(x = ne, y = ne)
                 , size = 3
                 , fill = "coral2"
                 , shape = 21) +
-        ggplot2::geom_label(data = ne_data
+        geom_label(data = ne_data
                 , aes(x = ne, y = ne + 0.06, label = round(ne, 2))) +
-        ggplot2::labs(title = "Nash Equilibrium of Adoption Model (Fixed Points)"
+        labs(title = "Nash Equilibrium of Adoption Model (Fixed Points)"
                 , subtitle = "Fixed points where curve intersects 45 degree line."
                 , x = "S - Portion adopted before reaction"
                 , y = "S - Portion adopted after reaction") +
-        ggthemes::theme_clean()
-    ggplot2::ggsave(plot_name
+        theme_clean()
+    ggsave(plot_name
         , device = "pdf"
         , width = 8
         , height = 5
