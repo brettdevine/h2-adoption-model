@@ -19,7 +19,7 @@ ne_plot_simple_data <- function(model_params) {
     return(list(sample_df, ne_data))
 }
 
-ne_plot_simple <- function(curve_data, ne_data, plot_name = "adoption_curve.pdf") {
+ne_plot_simple <- function(curve_data, ne_data, plot_name = "ne-plot-simple.pdf") {
     df_cu <- data.frame("s" = curve_data[, 1]
         , "ks" = curve_data[, 2])
     df_ne <- data.frame("ne" = ne_data[, 1])
@@ -95,7 +95,7 @@ ne_plot_recursive_data <- function(model_params) {
     }
 }
 
-ne_plot_recursive <- function(plot_data, model_params) {
+ne_plot_recursive <- function(plot_data, model_params, plot_name = "ne-plot-recursive.pdf") {
     if (length(plot_data) > 3) {
         curve_df <- plot_data[[1]]
         below_tipp_path <- plot_data[[2]]
@@ -103,7 +103,7 @@ ne_plot_recursive <- function(plot_data, model_params) {
         above_high_path <- plot_data[[4]]
         ne_df <- plot_data[[5]]
 
-        ggplot() +
+        ggplot(above_tipp_path, aes(x = x, y = y)) +
             # 45 degree line
             geom_line(data = curve_df, aes(x = s, y = s)
                 , linewidth = 0.6
@@ -155,6 +155,13 @@ ne_plot_recursive <- function(plot_data, model_params) {
               , y = TeX(r"($1-G(S)$: Proportion of airports adopting $H_2$)")
             ) +
             theme_clean(base_size = 16)
+            ggsave(plot_name
+                , device = "pdf"
+                , width = 8
+                , height = 5
+                , units = "in"
+                , dpi = "retina"
+                , path = "./plot-img/")
     } else {
 
     }
