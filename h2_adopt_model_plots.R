@@ -163,6 +163,47 @@ ne_plot_recursive <- function(plot_data, model_params, plot_name = "ne-plot-recu
                 , dpi = "retina"
                 , path = "./plot-img/")
     } else {
+        curve_df <- plot_data[[1]]
+        above_zero_path <- plot_data[[2]]
+        ne_df <- plot_data[[3]]
 
+        ggplot(above_zero_path, aes(x = x, y = y)) +
+            # 45 degree line
+            geom_line(data = curve_df, aes(x = s, y = s)
+                , linewidth = 0.6
+                , alpha = 0.7) +
+            # Adoption curve
+            geom_line(data = curve_df, aes(x = s, y = ac)
+                , linewidth = 2.5
+                , color = "aquamarine3") +
+            # Dynamics above high equilibrium
+            geom_point(data = above_zero_path
+                , fill = "magenta2"
+                , size = 2
+                , shape = 21) +
+            geom_segment(data = above_zero_path
+                , aes(xend = after_stat(lead(x)), yend = after_stat(lead(y)))
+                , arrow = arrow(length = unit(3, "mm"))
+                , color = "magenta2") +
+             # Equilibrium point markers, labels, etc.
+            geom_point(data = ne_df, aes(x = ne, y = ne)
+                , size = 3.5
+                , shape = 19) +
+            geom_label(data = ne_df
+                , aes(x = ne, y = ne + 0.08, label = round(ne, 2))) +
+            labs(
+                title = "Recursive airport hydrogen adoption path"
+              , subtitle = TeX(paste0(r"(Strategic forces, Nash equilibria and tipping points)", ''))
+              , x = TeX(r"($S$: Proportion of airports adopting $H_2$)")
+              , y = TeX(r"($1-G(S)$: Proportion of airports adopting $H_2$)")
+            ) +
+            theme_clean(base_size = 16)
+            ggsave(plot_name
+                , device = "pdf"
+                , width = 8
+                , height = 5
+                , units = "in"
+                , dpi = "retina"
+                , path = "./plot-img/")
     }
 }

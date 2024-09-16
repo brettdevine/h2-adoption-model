@@ -20,7 +20,7 @@ my_model <- c("p_h" = 1.2
     , "f_h" = 3.0
     , "delta" = 0.04
     , "gamma" = 0.02
-    , "x" = 2.0)
+    , "x" = 10.0)
 
 #curve_data = data.frame("s" = seq(0.0, 1.0, 0.001))
 #curve_data["ks"] = adoption_curve(curve_data["s"], my_model)
