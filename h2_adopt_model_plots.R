@@ -13,9 +13,29 @@ library(latex2exp)
 source("h2_adopt_model.R")
 
 ne_plot_simple_data <- function(model_params) {
+    #' Generates adoption curve along with Nash equilibrium (fixed) points
+    #' for plotting.
+    #'
+    #' @description This function takes in the model parameters and then
+    #' calculates the dataframe and equilibrium data points needed for
+    #' a simple plot.
+    #'
+    #' @param model_params named vector. A named vector of parameter values.
+    #' Specifically, we have, as an example:
+    #' data.frame("p_h" = 1.2
+    #'      , "f_h" = 3.0
+    #'      , "delta" = 0.04
+    #'      , "gamma" = 0.02
+    #'      , "x" = 10.0)
+    #'
+    #' @return list of dataframes.
+    #'  1.) Dataframe containing adoption rates
+    #'      and the adoption curve values.
+    #'  2.) Datafram containing the Nash equilibria (fixed points)
+    #'      of the model.
     sample_df <- data.frame("s" = seq(0, 1, 0.01))
     sample_df["ac"] <- adoption_curve(sample_df["s"], model_params)
-    ne_data <- data.frame("ne" = nash_equilibria(sample_df["s"], model_params))
+    ne_data <- data.frame("ne" = nash_equilibria(model_params))
     return(list(sample_df, ne_data))
 }
 

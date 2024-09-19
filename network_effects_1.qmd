@@ -16,11 +16,11 @@ source("./h2_adopt_model_plots.R")
 library(tidyverse)
 
 # Set the model parameters using named vectors
-my_model <- c("p_h" = 1.2
+my_model <- data.frame("p_h" = 1.2
     , "f_h" = 3.0
     , "delta" = 0.04
     , "gamma" = 0.02
-    , "x" = 10.0)
+    , "x" = 6.0)
 
 #curve_data = data.frame("s" = seq(0.0, 1.0, 0.001))
 #curve_data["ks"] = adoption_curve(curve_data["s"], my_model)
@@ -34,4 +34,9 @@ ne_plot_simple(plot_df[[1]], plot_df[[2]], "test_plot.pdf")
 ```{r}
 plot_df2 <- ne_plot_recursive_data(my_model)
 ne_plot_recursive(plot_df2, my_model)
+```
+
+
+```{r}
+?ne_plot_simple_data
 ```

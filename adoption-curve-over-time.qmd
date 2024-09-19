@@ -1,0 +1,89 @@
+---
+title: "Adoption Curve over Time"
+format: html
+---
+
+For any parameter vector $\Theta$ the resulting game $\Gamma(\Theta)$ will involve the distribution of airport sizes $G(Q)$.
+This distribution is used to find the adoption rate by finding the probability (measure) that an airport has sufficient size $Q$ to warrant adoption.
+Let $Q^*$ be the airport size at which an aiport is indifferent between adoption and nonadoption.
+Then the proportion adopting is,
+
+$$
+\begin{align}
+S = 1 - G(Q^*)
+\end{align}
+$$
+
+Because the $Q^*(S)$ is a function of $S$, we can derive a recursive relationship
+
+$$
+S_t = 1 - G(Q^*(S_{t-1}))
+$$
+
+and of course whenever $S_t = S_{t-1}$ we will have a fixed point.
+
+In the simultaneous model dynamics of the model with network effects, adoption dynamics can "unravel" so that starting with a positive adoption rate below the tipping point can result in people "unadopting" until we get to the equilibrium value of 0 adoption.
+However, in the reality of infrastructure installation, airports who previously install, may not see fit to uninstall. 
+When "unadoption" is not a thing, then the proportion of adopters $S$ can only weakly increase, but not decrease over time.
+
+The question is, what, if any, of the other model aspects or parameters are altered by an existing pool of adopters that cannot or will not remove the installed infrastructure.
+```{r}
+source("./h2_adopt_model.R")
+source("./h2_adopt_model_plots.R")
+```
+
+```{r}
+init_model = data.frame(
+      "p_h" = 1.2
+    , "f_h" = 3.0
+    , "x" = 5.0
+    , "delta" = 0.05
+    , "gamma" = 0.03
+    )
+gr = data.frame(
+      "p_h" = -0.02
+    , "f_h" = 0.01
+    , "x" = -0.1
+    , "delta" = 0.0
+    , "gamma" = 0.0
+)
+
+model_set <- parameter_paths(init_model, gr)
+```
+
+```{r}
+
+```
+
+
+
+
+
+```{r}
+s0 = 0.0
+ne = data.frame("ne" = nash_equilibria(s0, init_model))
+sub_rate = 0.0
+ar_path = c(0)
+T = seq(2025, 2075, 1)
+for (t in 1:50) {
+    if (t < 10) {
+        curr_model = init_model
+        curr_model[["x"]] = init_model[["x"]]*(1-sub_rate)
+        ar_path[t+1] = max(adoption_curve(ar_path[t], curr_model), ar_path[t] + 0.02)
+    } else {
+        ar_path[t+1] = max(adoption_curve(ar_path[t], init_model), ar_path[t])
+    }
+}
+path_df = data.frame("year" = T, "ar" = ar_path)
+```
+
+
+```{r}
+library(tidyverse)
+ggplot(path_df, aes(x = T, y = ar)) +
+    geom_hline(yintercept = ne[1,1], linetype = "dashed") +
+    geom_hline(yintercept = ne[2,1], linetype = "dashed") +
+    geom_hline(yintercept = ne[3,1], linetype = "dashed") +
+    geom_line(color = "green", linewidth = 2, alpha = 0.8)
+```
+
