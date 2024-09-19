@@ -23,6 +23,15 @@ alpha <- function(s, model_params) {
     (s / (p_h + s^2))^2
 }
 
+alpha_vec <- function(s, model_params) {
+  n <- nrow(model_params)
+  alpha_path <- c()
+  for (i in 1:n) {
+    alpha_path[i] <- alpha(s[i, 1], model_params[i, ])
+  }
+  return(alpha_path)
+}
+
 
 # --------------------------
 # Airport Related Functions
@@ -40,7 +49,9 @@ adoption_curve <- function(s, model_params) {
 # Nash Equilbrium Related Functions
 # ----------------------------------
 nash_equilibria <- function(model_params) {
-  f <- function(s) {s - adoption_curve(s, model_params)}
+  f <- function(s) {
+      s - adoption_curve(s, model_params)
+  }
   uniroot.all(f, c(0, 1))
 }
 
@@ -70,9 +81,9 @@ tipping_point <- function(model_params) {
     }
 }
 
-# -----------------------------------
+# --------------------------------------
 # Parameter Evolution Related Functions
-# -----------------------------------
+# --------------------------------------
 parameter_paths <- function(init_params, growth_rates, periods = 50) {
   df <- init_params
   for (t in 1:(periods - 1)) {
@@ -83,4 +94,24 @@ parameter_paths <- function(init_params, growth_rates, periods = 50) {
     df[t + 1, "delta"] <- df[t, "delta"] * (1 + growth_rates[1, "delta"])
   }
   return(df)
+}
+
+# ------------------------------------------
+# Adoption Dynamics
+# ------------------------------------------
+adoption_dynamics <- function(model_params, s_inc, s0 = 0) {
+  n <- nrow(model_params)
+  s_path <- c(s0)
+  s_inc_path <- c(0)
+  for (i in 2:n) {
+    next_s <- adoption_curve(s_path[i - 1], model_params[i, ])
+    if (next_s > s_path[i - 1]) {
+      s_path[i] <- next_s
+      s_inc_path[i] <- 0
+    } else {
+      s_path[i] <- s_path[i - 1] + s_inc
+      s_inc_path[i] <- 1
+    }
+  }
+  return(data.frame("s" = s_path, "s_inc" = s_inc_path))
 }

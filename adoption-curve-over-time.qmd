@@ -28,22 +28,30 @@ When "unadoption" is not a thing, then the proportion of adopters $S$ can only w
 
 The question is, what, if any, of the other model aspects or parameters are altered by an existing pool of adopters that cannot or will not remove the installed infrastructure.
 ```{r}
+rm(list = ls())
 source("./h2_adopt_model.R")
 source("./h2_adopt_model_plots.R")
 ```
 
 ```{r}
+library(tidyverse)
+library(ggthemes)
+```
+
+## Tipping Point over Time
+
+```{r}
 init_model = data.frame(
-      "p_h" = 1.2
-    , "f_h" = 3.0
-    , "x" = 5.0
+      "p_h" = 1.5
+    , "f_h" = 2.5
+    , "x" = 10.0
     , "delta" = 0.05
     , "gamma" = 0.03
     )
 gr = data.frame(
       "p_h" = -0.02
     , "f_h" = 0.01
-    , "x" = -0.1
+    , "x" = -0.05
     , "delta" = 0.0
     , "gamma" = 0.0
 )
@@ -51,17 +59,38 @@ gr = data.frame(
 model_set <- parameter_paths(init_model, gr)
 ```
 
-```{r}
 
+```{r}
+ne_vec <- nash_equilibria_vec(model_set)
+res <- adoption_dynamics(model_set, 0.03)
+ne_vec <- cbind(ne_vec, res)
+ne_vec <- ne_vec %>%
+    mutate(time = c(2026:2075))
+ne_vec["alpha"] <- alpha_vec(ne_vec["s"], model_set)
 ```
 
+```{r}
+ggplot(data = ne_vec) +
+    geom_area(aes(x = time, y = s_inc), fill = "lightgrey", alpha = 0.5) +
+    geom_line(aes(x = time, y = tipp), color = "green") +
+    geom_line(aes(x = time, y = high), color = "blue") +
+    geom_line(aes(x = time, y = s)) +
+    geom_line(aes(x = time, y = alpha), color = "red") +
+    scale_x_continuous(n.breaks=10) +
+    theme_clean()
+```
 
-
-
+```{r}
+ggplot(data = ne_vec) +
+    geom_line(aes(x = alpha, y = s)
+        , linewidth = 2
+        , color = "aquamarine3") +
+    theme_clean()
+```
 
 ```{r}
 s0 = 0.0
-ne = data.frame("ne" = nash_equilibria(s0, init_model))
+ne = data.frame("ne" = nash_equilibria(init_model))
 sub_rate = 0.0
 ar_path = c(0)
 T = seq(2025, 2075, 1)
@@ -69,7 +98,7 @@ for (t in 1:50) {
     if (t < 10) {
         curr_model = init_model
         curr_model[["x"]] = init_model[["x"]]*(1-sub_rate)
-        ar_path[t+1] = max(adoption_curve(ar_path[t], curr_model), ar_path[t] + 0.02)
+        ar_path[t+1] = max(adoption_curve(ar_path[t], curr_model), ar_path[t] + 0.05)
     } else {
         ar_path[t+1] = max(adoption_curve(ar_path[t], init_model), ar_path[t])
     }
