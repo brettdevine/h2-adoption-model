@@ -1,1 +1,13 @@
 *.pdf
+adoption-curve-over-time.html
+adoption-curve-over-time_files/libs/bootstrap/bootstrap-icons.css
+adoption-curve-over-time_files/libs/bootstrap/bootstrap-icons.woff
+adoption-curve-over-time_files/libs/bootstrap/bootstrap.min.css
+adoption-curve-over-time_files/libs/bootstrap/bootstrap.min.js
+adoption-curve-over-time_files/libs/clipboard/clipboard.min.js
+adoption-curve-over-time_files/libs/quarto-html/anchor.min.js
+adoption-curve-over-time_files/libs/quarto-html/popper.min.js
+adoption-curve-over-time_files/libs/quarto-html/quarto-syntax-highlighting.css
+adoption-curve-over-time_files/libs/quarto-html/quarto.js
+adoption-curve-over-time_files/libs/quarto-html/tippy.css
+adoption-curve-over-time_files/libs/quarto-html/tippy.umd.min.js
