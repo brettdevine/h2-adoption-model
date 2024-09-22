@@ -91,7 +91,7 @@ iteration_path <- function(s0, model_params, n = 20) {
 
 ne_plot_recursive_data <- function(model_params) {
     sample_df <- data.frame("s" = seq(0, 1, 0.01))
-    ne_data <- data.frame("ne" = nash_equilibria(sample_df["s"], model_params))
+    ne_data <- data.frame("ne" = nash_equilibria(model_params))
     sample_df["ac"] <- adoption_curve(sample_df["s"], model_params)
     # Sort fixed points and select tipping point.
     if (nrow(ne_data) > 1) {

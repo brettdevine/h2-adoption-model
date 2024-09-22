@@ -47,6 +47,7 @@ init_model = data.frame(
     , "x" = 10.0
     , "delta" = 0.05
     , "gamma" = 0.03
+    , "rho" = 0.5
     )
 gr = data.frame(
       "p_h" = -0.02
@@ -54,6 +55,7 @@ gr = data.frame(
     , "x" = -0.05
     , "delta" = 0.0
     , "gamma" = 0.0
+    , "rho" = 0.0
 )
 
 model_set <- parameter_paths(init_model, gr)
@@ -70,6 +72,7 @@ ne_vec["alpha"] <- alpha_vec(ne_vec["s"], model_set)
 ```
 
 ```{r}
+# Adoption curve, tipping point, max_eq, and alpha over time.
 ggplot(data = ne_vec) +
     geom_area(aes(x = time, y = s_inc), fill = "lightgrey", alpha = 0.5) +
     geom_line(aes(x = time, y = tipp), color = "green") +
@@ -81,38 +84,10 @@ ggplot(data = ne_vec) +
 ```
 
 ```{r}
+# Relationship between alpha(s) and s over time
 ggplot(data = ne_vec) +
     geom_line(aes(x = alpha, y = s)
         , linewidth = 2
         , color = "aquamarine3") +
     theme_clean()
 ```
-
-```{r}
-s0 = 0.0
-ne = data.frame("ne" = nash_equilibria(init_model))
-sub_rate = 0.0
-ar_path = c(0)
-T = seq(2025, 2075, 1)
-for (t in 1:50) {
-    if (t < 10) {
-        curr_model = init_model
-        curr_model[["x"]] = init_model[["x"]]*(1-sub_rate)
-        ar_path[t+1] = max(adoption_curve(ar_path[t], curr_model), ar_path[t] + 0.05)
-    } else {
-        ar_path[t+1] = max(adoption_curve(ar_path[t], init_model), ar_path[t])
-    }
-}
-path_df = data.frame("year" = T, "ar" = ar_path)
-```
-
-
-```{r}
-library(tidyverse)
-ggplot(path_df, aes(x = T, y = ar)) +
-    geom_hline(yintercept = ne[1,1], linetype = "dashed") +
-    geom_hline(yintercept = ne[2,1], linetype = "dashed") +
-    geom_hline(yintercept = ne[3,1], linetype = "dashed") +
-    geom_line(color = "green", linewidth = 2, alpha = 0.8)
-```
-

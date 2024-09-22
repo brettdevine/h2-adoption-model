@@ -20,7 +20,8 @@ alpha <- function(s, model_params) {
     # The proportion of passenger miles attributed
     # to Hydrogen-fueled aircraft.
     p_h <- model_params[1, "p_h"]
-    (s / (p_h + s^2))^2
+    rho <- model_params[1, "rho"]
+    (p_h^(-rho / (rho - 1)) * s^(rho / (rho - 1)) + s)^(-1 / rho)
 }
 
 alpha_vec <- function(s, model_params) {
@@ -32,16 +33,39 @@ alpha_vec <- function(s, model_params) {
   return(alpha_path)
 }
 
+h2_demand <- function(y, s, model_params) {
+  y * alpha(s, model_params)
+}
+
 
 # --------------------------
 # Airport Related Functions
 # --------------------------
-adoption_curve <- function(s, model_params) {
+
+adoption_cutoff <- function(s, model_params) {
   x <- model_params[1, "x"]
+  f_h <- model_params[1, "f_h"]
   delta <- model_params[1, "delta"]
   gamma <- model_params[1, "gamma"]
-  f_h <- model_params[1, "f_h"]
-  exp(-1 * x * (delta - gamma) / (f_h * alpha(s, model_params) * s))
+
+  (x * (delta - gamma)) / (f_h * alpha(s, model_params) * s)
+}
+
+adoption_curve <- function(s, model_params, cdf = pexp) {
+  #x <- model_params[1, "x"]
+  #delta <- model_params[1, "delta"]
+  #gamma <- model_params[1, "gamma"]
+  #f_h <- model_params[1, "f_h"]
+
+  #Pr(Qi > cutoff) = 1 - Pr(Qi <= cutoff) = 1 - G(cutoff)
+  q_star <- adoption_cutoff(s, model_params)
+  if (is.numeric(q_star)) {
+    ac <- 1 - cdf(q_star)
+  } else {
+    ac <- 1 - cdf(q_star[, 1])
+    #exp(-1 * x * (delta - gamma) / (f_h * alpha(s, model_params) * s))
+  }
+  return(ac)
 }
 
 
@@ -92,6 +116,7 @@ parameter_paths <- function(init_params, growth_rates, periods = 50) {
     df[t + 1, "x"] <- df[t, "x"] * (1 + growth_rates[1, "x"])
     df[t + 1, "gamma"] <- df[t, "gamma"] * (1 + growth_rates[1, "gamma"])
     df[t + 1, "delta"] <- df[t, "delta"] * (1 + growth_rates[1, "delta"])
+    df[t + 1, "rho"] <- df[t, "rho"] * (1 + growth_rates[1, "rho"])
   }
   return(df)
 }
