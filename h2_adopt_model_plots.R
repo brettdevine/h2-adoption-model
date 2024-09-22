@@ -227,3 +227,71 @@ ne_plot_recursive <- function(plot_data, model_params, plot_name = "ne-plot-recu
                 , path = "./plot-img/")
     }
 }
+
+
+dynamic_adoption_plot_data <- function(model_set, s_inc) {
+    ne_vec <- nash_equilibria_vec(model_set)
+    ad_data <- adoption_dynamics(model_set, s_inc)
+    ne_vec <- cbind(ne_vec, ad_data)
+    ne_vec <- ne_vec %>%
+        mutate(time = c(2026:2075))
+    ne_vec["alpha"] <- alpha_vec(ne_vec["s"], model_set)
+    ne_vec["q_cutoff"] <- adoption_cutoff_vec(ne_vec["s"], model_set)
+    ne_vec["in_eq"] <- ifelse(abs(ne_vec["high"] - ne_vec["s"]) < 0.005, 1, 0)
+    return(ne_vec)
+}
+
+dynamic_adoption_plot <- function(plot_data, plot_name = "dyn_adopt_plot.pdf") {
+    fills <- c("Gov. Increment of adoption" = "lightgray"
+             , "System in Equilibrium" = "darkolivegreen1")
+    colors <- c("Tipping Point Nash Equilibrium" = "coral3"
+              , "High Nash Equilibrium" = "deepskyblue4"
+              , "Proportion Airports Adopted" = "aquamarine3"
+              , "Proportion H2 Flight" = "deeppink3")
+
+    sinc_xmin <- plot_data %>%
+        filter(s_inc == 1) %>%
+        select(time) %>%
+        min()
+
+    sinc_xmax <- plot_data %>%
+        filter(s_inc == 1) %>%
+        select(time) %>%
+        max()
+
+    in_eq_xmin <- plot_data %>%
+        filter(in_eq == 1 & s > 0) %>%
+        select(time) %>%
+        min()
+
+    in_eq_xmax <- plot_data %>%
+        filter(in_eq == 1) %>%
+        select(time) %>%
+        max()
+
+    ggplot(data = plot_data) +
+        geom_rect(aes(xmin = sinc_xmin, xmax = sinc_xmax, ymin = 0, ymax = 1
+            , fill = "Gov. Increment of adoption")
+            , alpha = 0.1) +
+        geom_rect(aes(xmin = in_eq_xmin, xmax = in_eq_xmax, ymin = 0, ymax = 1
+            , fill = "System in Equilibrium")
+            , alpha = 0.1) +
+        geom_line(aes(x = time, y = high, color = "High Nash Equilibrium")
+            , linewidth = 1) +
+        geom_line(aes(x = time, y = tipp
+            , color = "Tipping Point Nash Equilibrium")
+            , linewidth = 1
+            , linetype = "solid") +
+        geom_line(aes(x = time, y = s, color = "Proportion Airports Adopted")
+            , linewidth = 2
+            , alpha = 0.8) +
+        #geom_line(aes(x = time, y = alpha, color = "Proportion H2 Flight")) +
+        scale_x_continuous(n.breaks = 10) +
+        labs(x = "Time"
+            , y = "Proportion of Airlines Adopting"
+            , color = "Curve Legend"
+            , fill = "Area Legend") +
+        scale_color_manual(values = colors) +
+        scale_fill_manual(values = fills) +
+        theme_clean()
+}

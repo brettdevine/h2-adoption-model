@@ -51,6 +51,15 @@ adoption_cutoff <- function(s, model_params) {
   (x * (delta - gamma)) / (f_h * alpha(s, model_params) * s)
 }
 
+adoption_cutoff_vec <- function(s, model_params) {
+  n <- nrow(s)
+  cutoff_path <- c()
+  for (i in 1:n) {
+    cutoff_path[i] <- adoption_cutoff(s[i, 1], model_params[i, ])
+  }
+  return(cutoff_path)
+}
+
 adoption_curve <- function(s, model_params, cdf = pexp) {
   #x <- model_params[1, "x"]
   #delta <- model_params[1, "delta"]

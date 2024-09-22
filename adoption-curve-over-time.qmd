@@ -69,17 +69,27 @@ ne_vec <- cbind(ne_vec, res)
 ne_vec <- ne_vec %>%
     mutate(time = c(2026:2075))
 ne_vec["alpha"] <- alpha_vec(ne_vec["s"], model_set)
+ne_vec["q_cutoff"] <- adoption_cutoff_vec(ne_vec["s"], model_set)
 ```
 
 ```{r}
 # Adoption curve, tipping point, max_eq, and alpha over time.
+colors <- c("Gov. Increment of adoption" = "lightgrey"
+          , "Tipping Point Nash Equilibrium" = "green"
+          , "High Nash Equilibrium" = "blue"
+          , "Proportion Airports Adopted" = "black"
+          , "Proportion H2 Flight" = "red")
+
+
 ggplot(data = ne_vec) +
-    geom_area(aes(x = time, y = s_inc), fill = "lightgrey", alpha = 0.5) +
-    geom_line(aes(x = time, y = tipp), color = "green") +
-    geom_line(aes(x = time, y = high), color = "blue") +
-    geom_line(aes(x = time, y = s)) +
-    geom_line(aes(x = time, y = alpha), color = "red") +
+    geom_area(aes(x = time, y = s_inc, fill = "Gov. Increment of adoption"), alpha = 0.5) +
+    geom_line(aes(x = time, y = tipp, color = "Tipping Point Nash Equilibrium")) +
+    geom_line(aes(x = time, y = high, color = "High Nash Equilibrium")) +
+    geom_line(aes(x = time, y = s, color = "Proportion Airports Adopted")) +
+    geom_line(aes(x = time, y = alpha, color = "Proportion H2 Flight")) +
     scale_x_continuous(n.breaks=10) +
+    labs(x = "Time", y = "(%)", color = "Curve Legend", fill = "Area Legend") +
+    scale_color_manual(values = colors) +
     theme_clean()
 ```
 
@@ -90,4 +100,10 @@ ggplot(data = ne_vec) +
         , linewidth = 2
         , color = "aquamarine3") +
     theme_clean()
+```
+
+
+```{r}
+p_df <- dynamic_adoption_plot_data(model_set, 0.03)
+dynamic_adoption_plot(p_df)
 ```
