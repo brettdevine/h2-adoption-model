@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Airport Sizing
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+df = read_csv("./data/airports/T_T100_MARKET_ALL_CARRIER.csv") %>%
+  filter(DEST_COUNTRY == "US" | ORIGIN_COUNTRY == "US") %>%
+  mutate(domestic = ifelse(DEST_COUNTRY=="US" & ORIGIN_COUNTRY=="US", 1, 0))
+```
+
+Airports outside the US will not be considered for the population airport sizes. However, foreign airports are needed to calculate the total amount of passenger miles in and out of an international airport. So I'll first create an indicator for foreign or domestic airport and then after the necessary calculations I can drop them from the population.
+
+```{r}
+# Load airport code support table
+aircode = read_csv("./data/airports/T_MASTER_CORD.csv") %>%
+  select(AIRPORT_ID, AIRPORT_COUNTRY_CODE_ISO)
+```
+
+## Flight Counts
+
+```{r}
+orig_flight_counts = df %>%
+  filter(DISTANCE > 0) %>%
+  group_by(ORIGIN_AIRPORT_ID) %>%
+  summarize(orig_flight_count = n())
+
+dest_flight_counts = df %>%
+  filter(DISTANCE > 0) %>%
+  group_by(DEST_AIRPORT_ID) %>%
+  summarize(dest_flight_count = n())
+
+orig_flight_counts %>%
+  inner_join(dest_flight_counts, by = join_by(ORIGIN_AIRPORT_ID == DEST_AIRPORT_ID)) %>%
+  mutate(flight_count = orig_flight_count + dest_flight_count) %>%
+  rename('airport_id' = 'ORIGIN_AIRPORT_ID') %>%
+  left_join(aircode, by = join_by(airport_id == AIRPORT_ID)) %>%
+  filter(AIRPORT_COUNTRY_CODE_ISO == "US") -> airport_flight_counts
+
+airport_flight_counts = airport_flight_counts[!duplicated(airport_flight_counts), ]
+
+airport_flight_counts = airport_flight_counts %>%
+  select(airport_id, fligh_count)
+```
+
+Now that I have a dataset of flight counts, I can look at the distribution and some of its moments.
+
+```{r}
+q3_count = quantile(airport_flight_counts$flight_count, 0.75)*1.5
+summary(airport_flight_counts)
+```
+
+```{r}
+ggplot(filter(airport_flight_counts, flight_count < q3_count)) +
+  geom_density(aes(x = flight_count, y = after_stat(density)))
+```
+
+## Passenger Miles
+
+```{r}
+orig_pm = df %>%
+  filter(DISTANCE > 0 & PASSENGERS > 0) %>%
+  mutate(passenger_miles = DISTANCE * PASSENGERS) %>%
+  group_by(ORIGIN_AIRPORT_ID) %>%
+  summarize(orig_pm = sum(passenger_miles))
+
+dest_pm = df %>%
+  filter(DISTANCE > 0 & PASSENGERS > 0) %>%
+  mutate(passenger_miles = DISTANCE * PASSENGERS) %>%
+  group_by(DEST_AIRPORT_ID) %>%
+  summarize(dest_pm = sum(passenger_miles))
+
+orig_pm %>%
+  inner_join(dest_pm, by = join_by(ORIGIN_AIRPORT_ID == DEST_AIRPORT_ID)) %>%
+  mutate(passenger_miles = orig_pm + dest_pm) %>%
+  rename('airport_id' = 'ORIGIN_AIRPORT_ID') %>%
+  left_join(aircode, by = join_by(airport_id == AIRPORT_ID)) %>%
+  filter(AIRPORT_COUNTRY_CODE_ISO == "US") -> airport_pm
+
+airport_pm = airport_pm[!duplicated(airport_pm), ]
+```
+
+```{r}
+s = summary(airport_pm)
+q3 = quantile(airport_pm$passenger_miles, 0.75)
+s
+```
+
+```{r}
+ggplot(filter(airport_pm, passenger_miles < q3)) +
+  geom_density(aes(x = passenger_miles, y = after_stat(density)))
+```
