@@ -92,6 +92,164 @@ s
 ```
 
 ```{r}
+# First two sample moments about the mean.
+pm_min = min(airport_pm$passenger_miles)
+pm_max = max(airport_pm$passenger_miles)
+pm_mean = mean(airport_pm$passenger_miles)
+pm_sd = sd(airport_pm$passenger_miles)
+
+print(paste("The min is:  ", pm_min))
+print(paste("The max is : ", pm_max))
+print(paste("The mean is: ", pm_mean))
+print(paste("The std dev: ", pm_sd))
+```
+
+```{r}
 ggplot(filter(airport_pm, passenger_miles < q3)) +
   geom_density(aes(x = passenger_miles, y = after_stat(density)))
 ```
+
+If we assume this meets a Pareto distribution, then we can map the following values. The Pareto distribution CDF is defined as,
+
+$$
+f(x) = \frac{\alpha x_m^{\alpha}}{x^{\alpha+1}}
+$$
+
+$$
+\begin{align}
+F(x) &= 1 - \left(\frac{x_m}{x}\right)^{\alpha}
+\end{align}
+$$
+
+where $x_m > 0$ is a scale parameter representing the minimum of the distribution. The mean and variance are
+
+$$
+\begin{align}
+\mu = \begin{cases} \infty & \text{for } \alpha \leq 1 \\
+\frac{\alpha x_m}{\alpha - 1} & \text{for } \alpha > 1 
+\end{cases}
+\end{align}
+$$
+
+$$
+\sigma^2 = \begin{cases} \infty & \text{for } \alpha \leq 2 \\
+\frac{x_m^2 \alpha}{(\alpha-1)^2(\alpha-2)} & \text{for } \alpha > 2 \end{cases}
+$$
+
+Where $\alpha > 0$ is a shape parameter. Letting $\bar{x}$ represent the sample mean we can use the mean condition as
+
+$$
+\begin{align}
+\bar{x} &= \frac{\alpha x_m}{\alpha - 1} \\
+\bar{x}(\alpha - 1) &= \alpha x_m \\
+\alpha \bar{x} - \alpha x_m = \bar{x} \\
+\alpha (\bar{x} - x_m) &= \bar{x} \\
+\alpha &= \frac{\bar{x}}{\bar{x} - x_m}
+\end{align}
+$$
+
+Using $s^2$ as the sample variance we would have
+
+$$
+\begin{align}
+s^2 &= \frac{x_m^2 \alpha}{(\alpha-1)^2 (\alpha-2)} \\
+\frac{s^2(\alpha-1)^2}{x_m^2} &= \frac{\alpha}{\alpha - 2} \\
+\frac{s(\alpha-1)}{x_m} &= \frac{\sqrt{\alpha}}{\sqrt{\alpha-2}}
+\end{align}
+$$
+
+```{r}
+pareto_PDF <- function(x, x_m = 2, a = 6){
+    return((a*x_m^a)/(x^(a+1)))
+}
+pareto_CDF <- function(x, x_m = 2, a = 6){
+    return(1 - (x_m/x)^a)
+}
+  
+```
+
+```{r}
+calibrated_PDF <- function(x) {
+  return(pareto_PDF(x, pm_min, pm_mean/(pm_mean - pm_min)))
+}
+calibrated_CDF <- function(x) {
+  return(pareto_CDF(x, pm_min, pm_mean/(pm_mean-pm_min)))
+}
+
+curve(calibrated_CDF, from = pm_min, to = pm_max)
+```
+
+## Enplanements
+
+Another way to measure the size of an airport may be "enplanements" which I think means how many people it got onto planes. This data is contained in some airport financials and I will look at it here based on a smaller sample of airports to see what distribution seems to make sense.
+
+```{r}
+fin = read_csv("./data/airports/airport_financials.csv")
+```
+
+How many unique airport codes are listed with positive enplanement numbers?
+
+```{r}
+fin %>%
+  filter(Enplanements > 0) %>%
+  select(Enplanements) %>%
+  dim()
+```
+
+Apparently, there are only 281 airports reporting positive enplanements. I will assume that any zero values for enplanements are mistakes, or indicative of missing data.
+
+```{r}
+ggplot(filter(fin, Enplanements > 0)) +
+  geom_density(aes(x = Enplanements))
+```
+
+Looks like enplanements have the same basic distribution as revenue passenger miles.
+
+Another measurement of size is the total revenue. How does it correlate with Enplanements?
+
+```{r}
+plot_rev_df = fin %>%
+  select(Enplanements, `Total Operating Revenue`) %>%
+  filter(Enplanements>0, `Total Operating Revenue`>0)
+
+plot_exp_df = fin %>%
+  select(Enplanements, `Total Operating Expenses`) %>%
+  filter(Enplanements>0, `Total Operating Expenses`>0)
+```
+
+```{r}
+ggplot(plot_rev_df, aes(x = Enplanements, y = `Total Operating Revenue`)) +
+         geom_point()
+```
+
+```{r}
+ggplot(plot_exp_df, aes(x = Enplanements, y = `Total Operating Expenses`)) +
+         geom_point()
+```
+
+What about net operating revenue?
+
+```{r}
+fin %>%
+  select(`Total Operating Expenses`,
+         `Total Operating Revenue`,
+         `Enplanements`) %>%
+  filter(`Total Operating Revenue`>0,
+         `Total Operating Expenses`>0,
+         `Enplanements`>0) %>%
+  mutate(operating_profit = `Total Operating Revenue`-`Total Operating Expenses`) -> profit_df
+
+ggplot(profit_df) +
+  geom_point(aes(x = Enplanements, y = operating_profit))
+```
+
+```{r}
+# Aeronautical revenues or profits?
+fin %>%
+  filter(Enplanements>0, `Total Aeronautical Revenue`>0) %>%
+  ggplot() + geom_point(aes(x=Enplanements, y=`Total Aeronautical Revenue`))
+```
+
+Enplanements may be the thing to use for airport capacity instead of revenue passenger miles going in and out of an airport. It is difficult to decide which makes the most sense. I did find this
+
+> This term is widely used in the aviation industry and is defined as a '**passenger boarding a plane at a particular airport**. ' Tracking enplaned passengers is the most important air traffic measurement because the majority of airport revenues are generated directly or indirectly from enplaned passengers.
