@@ -15,13 +15,38 @@ library(rootSolve)
 # Airline Related Functions
 # -------------------------
 
+h2_demand <- function(y, s, model_params) {
+  # Returns the airline's demand for liquid hydrogen based flight
+  # The price of hydrogen, p_h, is relative to kerosene p_h* = p_h / p_k
+  # model_params must be a single row vector.
+  p_h = model_params[1, "p_h"]
+  rho = model_params[1, "rho"]
+  inner = ((1/p_h)^(rho/rho-1)) * (s^(rho/(rho-1))) + s
+  demand = y * (inner)^(-1/rho)
+  return(demand)
+}
+
+k_demand <- function(y, s, model_params) {
+  # Returns the airline's demand for kerosene / jetfuel based flight.
+  # The price of hydrogen, p_h, is relative to kerosene p_h* = p_h / p_k
+  # model_params must be a single row vector.
+  p_h = model_params[1, "p_h"]
+  rho = model_params[1, "rho"]
+  inner = (p_h^(rho/(rho-1))) * (s^(-1/(rho-1))) + 1
+  demand = y * (inner)^(-1/rho)
+  return(demand)
+}
+
 alpha <- function(s, model_params) {
-    # Parameter alpha from paper.
-    # The proportion of passenger miles attributed
-    # to Hydrogen-fueled aircraft.
-    p_h <- model_params[1, "p_h"]
-    rho <- model_params[1, "rho"]
-    (p_h^(-rho / (rho - 1)) * s^(rho / (rho - 1)) + s)^(-1 / rho)
+  # Returns variable alpha from the paper.
+  # The proportion of flight units demanded
+  # from hydrogen sources. The output y cancels
+  # out and is therefore nullified by y = 1.
+  # model_params must be a single row vector
+  hyd_D = h2_demand(1, s, model_params)
+  ker_D = k_demand(1, s, model_params)
+  alpha = hyd_D / (hyd_D + ker_D)
+  return(alpha)
 }
 
 alpha_vec <- function(s, model_params) {
@@ -31,10 +56,6 @@ alpha_vec <- function(s, model_params) {
     alpha_path[i] <- alpha(s[i, 1], model_params[i, ])
   }
   return(alpha_path)
-}
-
-h2_demand <- function(y, s, model_params) {
-  y * alpha(s, model_params)
 }
 
 
