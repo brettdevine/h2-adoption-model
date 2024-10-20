@@ -63,13 +63,32 @@ alpha_vec <- function(s, model_params) {
 # Airport Related Functions
 # --------------------------
 
+adoption_benefit <- function(q, s, model_params) {
+  f_h <- model_params[1, "f_h"]
+  delta <- model_params[1, "delta"]
+  gamma <- model_params[1, "gamma"]
+  benefit <- (f_h / (delta - gamma)) * alpha(s, model_params) * s
+  return(benefit)
+}
+
+adoption_cost <- function(q, s, model_params) {
+  x <- model_params[1, "x"]
+  c_x <- model_params[1, "c_x"]
+  cost <- x + c_x * q
+}
+
 adoption_cutoff <- function(s, model_params) {
   x <- model_params[1, "x"]
+  c_x <- model_params[1, "c_x"]
   f_h <- model_params[1, "f_h"]
   delta <- model_params[1, "delta"]
   gamma <- model_params[1, "gamma"]
 
-  (x * (delta - gamma)) / (f_h * alpha(s, model_params) * s)
+  numer <- x * (delta - gamma)
+  denom <- f_h * alpha(s, model_params) * s - c_x*(delta - gamma)
+  cutoff <- numer / denom
+  cutoff[cutoff < 0] = Inf
+  return(cutoff)
 }
 
 adoption_cutoff_vec <- function(s, model_params) {
@@ -144,6 +163,7 @@ parameter_paths <- function(init_params, growth_rates, periods = 50) {
     df[t + 1, "p_h"] <- df[t, "p_h"] * (1 + growth_rates[1, "p_h"])
     df[t + 1, "f_h"] <- df[t, "f_h"] * (1 + growth_rates[1, "f_h"])
     df[t + 1, "x"] <- df[t, "x"] * (1 + growth_rates[1, "x"])
+    df[t + 1, "c_x"] <- df[t, "c_x"] * (1 + growth_rates[1, "c_x"])
     df[t + 1, "gamma"] <- df[t, "gamma"] * (1 + growth_rates[1, "gamma"])
     df[t + 1, "delta"] <- df[t, "delta"] * (1 + growth_rates[1, "delta"])
     df[t + 1, "rho"] <- df[t, "rho"] * (1 + growth_rates[1, "rho"])
