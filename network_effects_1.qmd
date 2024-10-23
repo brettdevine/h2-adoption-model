@@ -9,26 +9,81 @@ These cells will create some of the graphs used in the paper, presentations, and
 rm(list = ls())
 source("./h2_adopt_model.R")
 source("./h2_adopt_model_plots.R")
+
+library(tidyverse)
+```
+
+### Define Calibrated Distribution of Airport Sizes
+
+```{r}
+# Define distribution of airport sizes
+# Focusing on origin passenger miles and removing
+# outliers (1.5 x interquartile range) we have
+# the following, where Q_min is set artificially low
+# since its close Q_min = 11.
+Q_min <- 0.5
+Q_max <- 1917009.00
+Q_mean <- 197069.96
+Q_mode <- 8683.595
+
+# Gamma Distribution Parameters
+# Current parameters from mode-mean calibration
+theta = 188386.36
+k = 1.046095
+
+pareto_CDF <- function(x, x_m = 2, a = 6){
+    return(1 - (x_m/x)^a)
+}
+
+calibrated_CDF <- function(x) {
+  return(pareto_CDF(x, Q_min, Q_mean/(Q_mean-Q_min)))
+}
+
+calibrated_gamma_pdf <- function(x) {
+  dgamma(x, shape = k, scale = theta)
+}
+
+calibrated_gamma_cdf <- function(x) {
+  pgamma(x, shape = k, scale = theta)
+}
+
+curve(calibrated_gamma_pdf, from = 100, to = Q_max)
+```
+
+```{r}
+curve(calibrated_gamma_cdf, from = 0, to = Q_max)
 ```
 
 
 ```{r}
-# Create simple Nash Eq plot 
-library(tidyverse)
-
 # Set the model parameters using named vectors
-my_model <- data.frame("p_h" = 1.2
-    , "f_h" = 3.0
+calibrated_model_params <- data.frame(
+      "p_h" = 1.2
+    , "f_k_rev" = 0.00000002118861
+    , "f_k_exp" = 0.00000001871368
+    , "f_h_rev" = 1.0
+    , "f_h_exp" = 1.0
     , "delta" = 0.04
     , "gamma" = 0.02
-    , "x" = 6.0
-    , "c_x" = 1.0
-    , "rho" = 0.5)
+    , "x" = 173.75 
+    , "c_x" = 2.7031
+    , "eta" = 0.00000001425
+    , "nu" = 0.8
+    , "rho" = 0.5
+    , "q_min" = Q_min
+    , "q_max" = Q_max
+    , "q_mean" = Q_mean
+)
+
+# Create Model List
+model <- list(calibrated_model_params,
+              calibrated_CDF)
+names(model) <- c("model_params", "cdf")
 
 #curve_data = data.frame("s" = seq(0.0, 1.0, 0.001))
 #curve_data["ks"] = adoption_curve(curve_data["s"], my_model)
 #ne_data = data.frame("ne"=nash_equilibria(curve_data["s"], my_model))
-plot_df <- ne_plot_simple_data(my_model)
+plot_df <- ne_plot_simple_data(model)
 # Pass model parameters to plot function
 ne_plot_simple(plot_df[[1]], plot_df[[2]], "test_plot.pdf")
 ```

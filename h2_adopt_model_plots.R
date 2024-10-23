@@ -12,30 +12,39 @@ library(ggtext)
 library(latex2exp)
 source("h2_adopt_model.R")
 
-ne_plot_simple_data <- function(model_params) {
-    #' Generates adoption curve along with Nash equilibrium (fixed) points
+ne_plot_simple_data <- function(model) {
+    #' Generates adoption curve data along with Nash equilibrium (fixed) points
     #' for plotting.
     #'
     #' @description This function takes in the model parameters and then
     #' calculates the dataframe and equilibrium data points needed for
     #' a simple plot.
     #'
-    #' @param model_params named vector. A named vector of parameter values.
+    #' @param model named list. A named list with two elements.
+    #' 1. A dataframe named "model_params" containing constant parameters
+    #' 2. A function named "cdf" representing the CDF for airport capacity sizes
+    #'  
     #' Specifically, we have, as an example:
-    #' data.frame("p_h" = 1.2
+    #' data.frame(
+    #'        "p_h" = 1.2
     #'      , "f_h" = 3.0
     #'      , "delta" = 0.04
     #'      , "gamma" = 0.02
-    #'      , "x" = 10.0)
+    #'      , "x" = 10.0
+    #'      , "c_x" = 2.5)
+    #' 
+    #' CDF <- function(x) {
+    #'      1 - exp(x^a)
+    #' }
     #'
     #' @return list of dataframes.
     #'  1.) Dataframe containing adoption rates
     #'      and the adoption curve values.
-    #'  2.) Datafram containing the Nash equilibria (fixed points)
+    #'  2.) Dataframe containing the Nash equilibria (fixed points)
     #'      of the model.
     sample_df <- data.frame("s" = seq(0, 1, 0.01))
-    sample_df["ac"] <- adoption_curve(sample_df["s"], model_params)
-    ne_data <- data.frame("ne" = nash_equilibria(model_params))
+    sample_df["ac"] <- adoption_curve(sample_df["s"], model$model_params, cdf = model$cdf)
+    ne_data <- data.frame("ne" = nash_equilibria(model$model_params, model$cdf))
     return(list(sample_df, ne_data))
 }
 

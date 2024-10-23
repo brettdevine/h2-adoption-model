@@ -74,18 +74,22 @@ adoption_benefit <- function(q, s, model_params) {
 adoption_cost <- function(q, s, model_params) {
   x <- model_params[1, "x"]
   c_x <- model_params[1, "c_x"]
-  cost <- x + c_x * q
+  eta <- model_params[1, "eta"]
+  nu <- model_params[1, "nu"]
+  cost <- x + c_x * eta * nu * q
 }
 
 adoption_cutoff <- function(s, model_params) {
   x <- model_params[1, "x"]
   c_x <- model_params[1, "c_x"]
+  eta <- model_params[1, "eta"]
+  nu <- model_params[1, "nu"]
   f_h <- model_params[1, "f_h"]
   delta <- model_params[1, "delta"]
   gamma <- model_params[1, "gamma"]
 
   numer <- x * (delta - gamma)
-  denom <- f_h * alpha(s, model_params) * s - c_x*(delta - gamma)
+  denom <- f_h * alpha(s, model_params) * s - (c_x * eta * nu * (delta - gamma))
   cutoff <- numer / denom
   cutoff[cutoff < 0] = Inf
   return(cutoff)
@@ -119,34 +123,34 @@ adoption_curve <- function(s, model_params, cdf = pexp) {
 
 
 # ----------------------------------
-# Nash Equilbrium Related Functions
+# Nash Equilibrium Related Functions
 # ----------------------------------
-nash_equilibria <- function(model_params) {
+nash_equilibria <- function(model_params, cdf) {
   f <- function(s) {
-      s - adoption_curve(s, model_params)
+      s - adoption_curve(s, model_params, cdf)
   }
   uniroot.all(f, c(0, 1))
 }
 
-nash_equilibria_vec <- function(model_params) {
+nash_equilibria_vec <- function(model_params, cdf) {
     num <- nrow(model_params)
     ne_df <- data.frame("low" = 0, "tipp" = 0, "high" = 0)
     if (num > 1) {
       for (i in 1:num) {
         f <- function(s) {
-            s - adoption_curve(s, model_params[i, ])
+            s - adoption_curve(s, model_params[i, ], cdf = cdf)
           }
         ne_df[i, ] <- uniroot.all(f, c(0, 1))
       }
     } else {
-    f <- function(s) { s - adoption_curve(s, model_params) }
+    f <- function(s) { s - adoption_curve(s, model_params, cdf = cdf) }
     ne_df[1, ] <- uniroot.all(f, c(0, 1))
     }
     return(ne_df)
 }
 
-tipping_point <- function(model_params) {
-    ne <- nash_equilibria(model_params)
+tipping_point <- function(model_params, cdf) {
+    ne <- nash_equilibria(model_params, cdf)
     if (nrow(ne) > 1) {
       return(ne[1, 2])
     } else {
@@ -174,12 +178,12 @@ parameter_paths <- function(init_params, growth_rates, periods = 50) {
 # ------------------------------------------
 # Adoption Dynamics
 # ------------------------------------------
-adoption_dynamics <- function(model_params, s_inc, s0 = 0) {
+adoption_dynamics <- function(model_params, cdf, s_inc, s0 = 0) {
   n <- nrow(model_params)
   s_path <- c(s0)
   s_inc_path <- c(0)
   for (i in 2:n) {
-    next_s <- adoption_curve(s_path[i - 1], model_params[i, ])
+    next_s <- adoption_curve(s_path[i - 1], model_params[i, ], cdf)
     if (next_s > s_path[i - 1]) {
       s_path[i] <- next_s
       s_inc_path[i] <- 0

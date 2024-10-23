@@ -93,8 +93,8 @@ airport_pm = airport_pm[!duplicated(airport_pm), ]
 ```
 
 ```{r}
-s = summary(airport_pm)
-q3 = quantile(airport_pm$passenger_miles, 0.75)
+s = summary(orig_pm)
+q3 = quantile(airport_pm$orig_pm, 0.75)
 s
 ```
 

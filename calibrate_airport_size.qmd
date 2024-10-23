@@ -1,0 +1,227 @@
+---
+title: "Calibrate Airport Size"
+format: pdf
+editor: visual
+---
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+
+df <- read_csv("./data/airports/T_T100_MARKET_ALL_CARRIER.csv") %>%
+  filter(DEST_COUNTRY == "US" | ORIGIN_COUNTRY == "US") %>%
+  mutate(domestic = ifelse(DEST_COUNTRY=="US" & ORIGIN_COUNTRY=="US", 1, 0))
+```
+
+Airports outside the US will not be considered for the population airport sizes. However, foreign airports are needed to calculate the total amount of passenger miles in and out of an international airport. So I'll first create an indicator for foreign or domestic airport and then after the necessary calculations I can drop them from the population.
+
+```{r}
+# Load airport code support table
+aircode = read_csv("./data/airports/T_MASTER_CORD.csv")
+  
+airport_names = aircode %>%
+  filter(AIRPORT_COUNTRY_CODE_ISO == "US") %>%
+  select(AIRPORT_ID, AIRPORT) %>%
+  distinct()
+
+#aircode = aircode %>% select(AIRPORT_ID, AIRPORT_COUNTRY_CODE_ISO)
+```
+
+### Flight Counts
+
+```{r}
+orig_flight_counts = df %>%
+  filter(DISTANCE > 0) %>%
+  group_by(ORIGIN_AIRPORT_ID) %>%
+  summarize(orig_flight_count = n())
+
+dest_flight_counts = df %>%
+  filter(DISTANCE > 0) %>%
+  group_by(DEST_AIRPORT_ID) %>%
+  summarize(dest_flight_count = n())
+
+orig_flight_counts %>%
+  inner_join(dest_flight_counts, by = join_by(ORIGIN_AIRPORT_ID == DEST_AIRPORT_ID)) %>%
+  mutate(flight_count = orig_flight_count + dest_flight_count) %>%
+  rename('airport_id' = 'ORIGIN_AIRPORT_ID') %>%
+  left_join(aircode, by = join_by(airport_id == AIRPORT_ID)) %>%
+  filter(AIRPORT_COUNTRY_CODE_ISO == "US") -> airport_flight_counts
+
+
+airport_flight_counts = airport_flight_counts[!duplicated(airport_flight_counts), ]
+
+airport_flight_counts = airport_flight_counts %>%
+  select(airport_id, flight_count) %>%
+  distinct()
+```
+
+```{r}
+q3_count = quantile(airport_flight_counts$flight_count, 0.75)*4
+summary(airport_flight_counts$flight_count)
+```
+
+```{r}
+ggplot(filter(airport_flight_counts, flight_count < q3_count)) +
+  geom_density(aes(x = flight_count, y = after_stat(density)))
+```
+
+### Passenger Miles
+
+```{r}
+orig_pm = df %>%
+  filter(DISTANCE > 0 & PASSENGERS > 0) %>%
+  mutate(passenger_miles = DISTANCE * PASSENGERS) %>%
+  group_by(ORIGIN_AIRPORT_ID) %>%
+  summarize(orig_pm = sum(passenger_miles))
+
+dest_pm = df %>%
+  filter(DISTANCE > 0 & PASSENGERS > 0) %>%
+  mutate(passenger_miles = DISTANCE * PASSENGERS) %>%
+  group_by(DEST_AIRPORT_ID) %>%
+  summarize(dest_pm = sum(passenger_miles))
+
+orig_pm %>%
+  inner_join(dest_pm, by = join_by(ORIGIN_AIRPORT_ID == DEST_AIRPORT_ID)) %>%
+  mutate(passenger_miles = orig_pm + dest_pm) %>%
+  rename('airport_id' = 'ORIGIN_AIRPORT_ID') %>%
+  left_join(aircode, by = join_by(airport_id == AIRPORT_ID)) %>%
+  filter(AIRPORT_COUNTRY_CODE_ISO == "US") %>%
+  select(airport_id, AIRPORT, orig_pm) -> airport_pm
+
+airport_pm = airport_pm[!duplicated(airport_pm), ]
+write_csv(airport_pm, "./data/airports/airport_pm.csv")
+```
+
+```{r}
+s = summary(airport_pm$orig_pm)
+q3 = quantile(airport_pm$orig_pm, 0.75)
+s
+```
+
+```{r}
+# Remove outliers (1.5 x interquartile range)
+pm_outliers <- boxplot(airport_pm$orig_pm, plot = FALSE)$out
+airport_pm <- airport_pm[-which(airport_pm$orig_pm %in% pm_outliers), ]
+```
+
+```{r}
+# First two sample moments about the mean.
+pm_min = min(airport_pm$orig_pm)
+pm_max = round(max(airport_pm$orig_pm), 2)
+pm_mean = round(mean(airport_pm$orig_pm), 2)
+pm_sd = round(sd(airport_pm$orig_pm), 2)
+
+print(paste("The min is:  ", format(pm_min, nsmall=2, big.mark=",")))
+print(paste("The max is : ", format(pm_max, nsmall=2, big.mark=",")))
+print(paste("The mean is: ", format(pm_mean, nsmall=2, big.mark=",")))
+print(paste("The std dev: ", format(pm_sd, nsmall=2, big.mark=",")))
+```
+
+```{r}
+ggplot(airport_pm) +
+  geom_density(aes(x = orig_pm, y = after_stat(density)))
+```
+
+```{r}
+pareto_PDF <- function(x, x_m = 2, a = 6){
+    return((a*x_m^a)/(x^(a+1)))
+}
+pareto_CDF <- function(x, x_m = 2, a = 6){
+    return(1 - (x_m/x)^a)
+}
+```
+
+```{r}
+calibrated_PDF <- function(x) {
+  return(pareto_PDF(x, pm_min, pm_mean/(pm_mean - pm_min)))
+}
+calibrated_CDF <- function(x) {
+  return(pareto_CDF(x, pm_min, pm_mean/(pm_mean-pm_min)))
+}
+
+curve(calibrated_CDF, from = pm_min, to = pm_max*0.7)
+```
+
+```{r}
+curve(calibrated_PDF, from = pm_min, to = pm_max)
+```
+
+### Gamma Distribution Fit
+
+```{r}
+airport_pm %>%
+  mutate(lnx = log(orig_pm)) %>%
+  mutate(xlnx = orig_pm * lnx) -> pm_gam
+
+bar_x <- mean(pm_gam$orig_pm)
+bar_lnx <- mean(pm_gam$lnx)
+bar_xlnx <- mean(pm_gam$xlnx)
+v_x <- mean((pm_gam$orig_pm - bar_x)^2)
+N <- nrow(pm_gam)
+
+# Maximum likelihood *like* consistent closed form estimators
+# derived from likelihood of the generalized gamma distribution
+ml_theta_hat <- bar_xlnx - bar_x * bar_lnx
+ml_theta_hat <- (N / (N - 1)) * ml_theta_hat
+
+ml_k_hat <- bar_x / ml_theta_hat
+ml_k_hat <- ml_k_hat - (1/N)*(3*ml_k_hat - (2/3)*(ml_k_hat/(1+ml_k_hat)) - (4/5)*(ml_k_hat/(1+ml_k_hat)^2))
+
+ml_mode_hat <- (ml_k_hat - 1) * ml_theta_hat
+
+# Method of moments estimation of gamma distribution
+mom_alpha_hat <- (bar_x)^2 / v_x
+mom_k_hat <- mom_alpha_hat
+mom_beta_hat <- (bar_x) / v_x
+mom_theta_hat <- 1 / mom_beta_hat
+
+mom_mode_hat <- (mom_k_hat - 1) * mom_theta_hat
+
+# Mean and Mode Calibration
+d <- density(airport_pm$orig_pm)
+mm_mode <- d$x[d$y == max(d$y)]
+mm_k_hat <- bar_x / (bar_x - mm_mode)
+mm_theta_hat <- bar_x - mm_mode
+```
+
+```{r}
+print(paste("The mode is:  ", format(mm_mode, nsmall=2, big.mark=",")))
+print(paste("Theta is:  ", format(mm_theta_hat, nsmall=2, big.mark=",")))
+print(paste("k is : ", format(mm_k_hat)))
+```
+
+```{r}
+gamma_pdf <- function(x) {
+  dgamma(x, shape = mm_k_hat, scale = mm_theta_hat)
+}
+
+gamma_cdf <- function(x) {
+  pgamma(x, shape = mm_k_hat, scale = mm_theta_hat)
+}
+
+curve(gamma_pdf, from=0, to=pm_max)
+```
+
+### Enplanements
+
+Another way to measure the size of an airport may be "enplanements" which I think means how many people it got onto planes. This data is contained in some airport financials and I will look at it here based on a smaller sample of airports to see what distribution seems to make sense.
+
+```{r}
+fin = read_csv("./data/airports/airport_financials.csv")
+```
+
+How many unique airport codes are listed with positive enplanement numbers?
+
+```{r}
+fin %>%
+  filter(Enplanements > 0) %>%
+  select(Enplanements) %>%
+  dim()
+```
+
+Apparently, there are only 281 airports reporting positive enplanements. I will assume that any zero values for enplanements are mistakes, or indicative of missing data.
+
+```{r}
+ggplot(filter(fin, Enplanements > 0)) +
+  geom_density(aes(x = Enplanements))
+```
