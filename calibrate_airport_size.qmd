@@ -95,7 +95,7 @@ write_csv(airport_pm, "./data/airports/airport_pm.csv")
 ```{r}
 s = summary(airport_pm$orig_pm)
 q3 = quantile(airport_pm$orig_pm, 0.75)
-s
+format(s, scientific=FALSE)
 ```
 
 ```{r}
@@ -192,7 +192,7 @@ print(paste("k is : ", format(mm_k_hat)))
 
 ```{r}
 gamma_pdf <- function(x) {
-  dgamma(x, shape = mm_k_hat, scale = mm_theta_hat)
+  dgamma(x, shape = ml_k_hat, scale = ml_theta_hat)
 }
 
 gamma_cdf <- function(x) {

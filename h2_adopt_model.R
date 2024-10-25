@@ -196,7 +196,7 @@ adoption_cutoff <- function(s, model_params) {
   gamma <- model_params[1, "gamma"]
 
   numer <- x * (delta - gamma)
-  denom <- (f_h_rev * f_k_rev - f_h_exp * f_k_exp) * alpha(s, model_params) * s - (c_x * eta * nu * (delta - gamma))
+  denom <- ((f_h_rev * f_k_rev) - (f_h_exp * f_k_exp)) * alpha(s, model_params) * s - (c_x * eta * nu * (delta - gamma))
   cutoff <- numer / denom
   cutoff[cutoff < 0] = Inf
   return(cutoff)
@@ -307,8 +307,13 @@ nash_equilibria_vec <- function(model_params, cdf) {
       for (i in 1:num) {
         f <- function(s) {
             s - adoption_curve(s, model_params[i, ], cdf = cdf)
-          }
+        }
+        roots <- uniroot.all(f, c(0,1))
+        if (length(roots) == 2) {
+          ne_df[i, ] <- c(0, 0, 1)
+        } else {
         ne_df[i, ] <- uniroot.all(f, c(0, 1))
+        }
       }
     } else {
     f <- function(s) { s - adoption_curve(s, model_params, cdf = cdf) }
@@ -371,6 +376,7 @@ parameter_paths <- function(init_params, growth_rates, periods = 50) {
     df[t + 1, "x"] <- df[t, "x"] * (1 + growth_rates[1, "x"])
     df[t + 1, "c_x"] <- df[t, "c_x"] * (1 + growth_rates[1, "c_x"])
     df[t + 1, "eta"] <- df[t, "eta"] * (1 + growth_rates[1, "eta"])
+    df[t + 1, "nu"] <- df[t, "nu"] * (1 + growth_rates[1, "nu"])
     df[t + 1, "gamma"] <- df[t, "gamma"] * (1 + growth_rates[1, "gamma"])
     df[t + 1, "delta"] <- df[t, "delta"] * (1 + growth_rates[1, "delta"])
     df[t + 1, "rho"] <- df[t, "rho"] * (1 + growth_rates[1, "rho"])
@@ -415,6 +421,9 @@ adoption_dynamics <- function(model_params, cdf, s_inc, s0 = 0) {
       s_inc_path[i] <- 0
     } else {
       s_path[i] <- s_path[i - 1] + s_inc
+      if (s_path[i] > 1) {
+        s_path[i] = 1
+      }
       s_inc_path[i] <- 1
     }
   }

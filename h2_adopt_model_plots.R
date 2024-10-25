@@ -82,12 +82,12 @@ ne_plot_simple <- function(curve_data, ne_data, plot_name = "ne-plot-simple.pdf"
         , path = "./plot-img/")
 }
 
-iteration_path <- function(s0, model_params, n = 20) {
+iteration_path <- function(s0, model_params, cdf, n = 20) {
     s_vals <- c(s0)
     path <- NULL
     for (i in 1:n) {
         curr_s <- s_vals[i]
-        next_s <- adoption_curve(curr_s, model_params)
+        next_s <- adoption_curve(curr_s, model$model_params, model$cdf)
         s_vals[i + 1] <- next_s
         temp_df <- data.frame("Iter" = i, "x" = curr_s, "y" = next_s)
         path <- rbind(path, temp_df)
@@ -98,18 +98,35 @@ iteration_path <- function(s0, model_params, n = 20) {
     return(path)
 }
 
-ne_plot_recursive_data <- function(model_params) {
+ne_plot_recursive_data <- function(model) {
+    #' Create the data necessary to plot an adoption curve, the 
+    #' Nash equilibrium, and the adoption dynamics.
+    #' 
+    #' @description This function facilitates graphical analysis
+    #' and presentation of the adoption curve, fixed points (Nash 
+    #' equilibrium) and the adoption dynamic forces that are driving
+    #' the market toward or away from a given equilibrium. It takes
+    #' model parameters and returns the data ready to plot.
+    #' 
+    #' @param model a named list which includes a single-row dataframe
+    #' of calibrated model parameters names "model_params" and a function
+    #' for the CDF of the distribution of airport sizes named "cdf"
+    #' 
+    #' @returns a list including dataframes for adoption curve values 
+    #' over s and an iterative path for for each equilibrium and a dataframe
+    #' including the actual Nash equilibrium points.
+    
     sample_df <- data.frame("s" = seq(0, 1, 0.01))
-    ne_data <- data.frame("ne" = nash_equilibria(model_params))
-    sample_df["ac"] <- adoption_curve(sample_df["s"], model_params)
+    ne_data <- data.frame("ne" = nash_equilibria(model$model_params, model$cdf))
+    sample_df["ac"] <- adoption_curve(sample_df["s"], model$model_params, model$cdf)
     # Sort fixed points and select tipping point.
     if (nrow(ne_data) > 1) {
         ne_data_sorted <- arrange(ne_data)
         tipp <- ne_data_sorted[2, 1]
         # Setup iteration paths
-        below_tipp_path <- iteration_path(tipp - 0.01, model_params)
-        above_tipp_path <- iteration_path(tipp + 0.01, model_params)
-        above_high_path <- iteration_path(1 - 0.01, model_params)
+        below_tipp_path <- iteration_path(tipp - 0.01, model$model_params)
+        above_tipp_path <- iteration_path(tipp + 0.01, model$model_params)
+        above_high_path <- iteration_path(1 - 0.01, model$model_params)
         return(list(sample_df
                 , below_tipp_path
                 , above_tipp_path
@@ -117,7 +134,7 @@ ne_plot_recursive_data <- function(model_params) {
                 , ne_data))
     } else {
         sample_df["ac"]
-        above_zero_path <- iteration_path(0.98, model_params)
+        above_zero_path <- iteration_path(0.98, model$model_params)
         return(list(sample_df
                 , above_zero_path
                 , ne_data))
@@ -238,9 +255,9 @@ ne_plot_recursive <- function(plot_data, model_params, plot_name = "ne-plot-recu
 }
 
 
-dynamic_adoption_plot_data <- function(model_set, s_inc) {
-    ne_vec <- nash_equilibria_vec(model_set)
-    ad_data <- adoption_dynamics(model_set, s_inc)
+dynamic_adoption_plot_data <- function(model_set, cdf, s_inc) {
+    ne_vec <- nash_equilibria_vec(model_set, cdf)
+    ad_data <- adoption_dynamics(model_set, cdf, s_inc)
     ne_vec <- cbind(ne_vec, ad_data)
     ne_vec <- ne_vec %>%
         mutate(time = c(2026:2075))
@@ -251,10 +268,10 @@ dynamic_adoption_plot_data <- function(model_set, s_inc) {
 }
 
 dynamic_adoption_plot <- function(plot_data, plot_name = "dyn_adopt_plot.pdf") {
-    fills <- c("Gov. Increment of adoption" = "lightgray"
+    fills <- c("Gov. Increment of adoption" = "skyblue"
              , "System in Equilibrium" = "darkolivegreen1")
-    colors <- c("Tipping Point Nash Equilibrium" = "coral3"
-              , "High Nash Equilibrium" = "deepskyblue4"
+    colors <- c("Tipping Point NE" = "coral3"
+              , "High NE" = "deepskyblue4"
               , "Proportion Airports Adopted" = "aquamarine3"
               , "Proportion H2 Flight" = "deeppink3")
 
@@ -281,14 +298,15 @@ dynamic_adoption_plot <- function(plot_data, plot_name = "dyn_adopt_plot.pdf") {
     ggplot(data = plot_data) +
         geom_rect(aes(xmin = sinc_xmin, xmax = sinc_xmax, ymin = 0, ymax = 1
             , fill = "Gov. Increment of adoption")
-            , alpha = 0.1) +
+            , alpha = 0.05) +
         geom_rect(aes(xmin = in_eq_xmin, xmax = in_eq_xmax, ymin = 0, ymax = 1
             , fill = "System in Equilibrium")
-            , alpha = 0.1) +
-        geom_line(aes(x = time, y = high, color = "High Nash Equilibrium")
+            , alpha = 0.05) +
+        geom_hline(yintercept = 1, color = "black") +
+        geom_line(aes(x = time, y = high, color = "High NE")
             , linewidth = 1) +
         geom_line(aes(x = time, y = tipp
-            , color = "Tipping Point Nash Equilibrium")
+            , color = "Tipping Point NE")
             , linewidth = 1
             , linetype = "solid") +
         geom_line(aes(x = time, y = s, color = "Proportion Airports Adopted")
@@ -297,10 +315,14 @@ dynamic_adoption_plot <- function(plot_data, plot_name = "dyn_adopt_plot.pdf") {
         #geom_line(aes(x = time, y = alpha, color = "Proportion H2 Flight")) +
         scale_x_continuous(n.breaks = 10) +
         labs(x = "Time"
-            , y = "Proportion of Airlines Adopting"
+            , y = "Proportion of Airlines"
             , color = "Curve Legend"
             , fill = "Area Legend") +
         scale_color_manual(values = colors) +
         scale_fill_manual(values = fills) +
-        theme_clean()
+        theme(
+            legend.key.size = unit(0.5, 'cm'),
+            legend.title = element_text(size = 9),
+            legend.text = element_text(size=8)
+            )
 }
