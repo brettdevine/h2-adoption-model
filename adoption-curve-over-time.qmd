@@ -59,24 +59,24 @@ init_model = data.frame(
     , "delta" = 0.04
     , "gamma" = 0.02
     , "x" = 173.75 
-    , "c_x" = 0#2.7031
+    , "c_x" = 0 #2.7031
     , "eta" = 0.00000001425
     , "nu" = 0.5
     , "rho" = 0.5
     )
 
 gr = data.frame(
-      "p_h" = -0.05
+      "p_h" = -0.1
     , "f_k_rev" = 0.0
     , "f_k_exp" = 0.0
     , "f_h_rev" = 0.0
-    , "f_h_exp" = -0.05
+    , "f_h_exp" = -0.1
     , "delta" = 0.0
     , "gamma" = 0.0
-    , "x" = -0.40
-    , "c_x" = -0.05
+    , "x" = -0.25
+    , "c_x" = -0.2
     , "eta" = 0.0
-    , "nu" = 0.0
+    , "nu" = 0.5
     , "rho" = 0.0
 )
 
@@ -131,6 +131,15 @@ ggplot(data = ne_vec) +
 
 
 ```{r}
-p_df <- dynamic_adoption_plot_data(model_set, model$cdf, 0.03)
-dynamic_adoption_plot(p_df)
+p_df <- dynamic_adoption_plot_data(model_set, model$cdf, 0.01)
+dynamic_adoption_plot(select(p_df, -q_cutoff))
+ggsave(file="./plot-img/adoption_dynamics.pdf", width = 8, height = 4, dpi = 300)
 ```
+
+
+```{r}
+m = list(model$init_params, model$cdf)
+names(m) = c("model_params", "cdf")
+plot_df2 <- ne_plot_recursive_data(m)
+```
+

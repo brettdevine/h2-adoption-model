@@ -304,11 +304,13 @@ dynamic_adoption_plot <- function(plot_data, plot_name = "dyn_adopt_plot.pdf") {
             , alpha = 0.05) +
         geom_hline(yintercept = 1, color = "black") +
         geom_line(aes(x = time, y = high, color = "High NE")
-            , linewidth = 1) +
+            , linewidth = 1
+            , alpha = 0.8) +
         geom_line(aes(x = time, y = tipp
             , color = "Tipping Point NE")
             , linewidth = 1
-            , linetype = "solid") +
+            , linetype = "solid"
+            , alpha = 0.8) +
         geom_line(aes(x = time, y = s, color = "Proportion Airports Adopted")
             , linewidth = 2
             , alpha = 0.8) +
