@@ -1,6 +1,6 @@
 ---
 title: "Calibrate Airport Size"
-format: pdf
+format: html
 editor: visual
 ---
 
@@ -18,7 +18,7 @@ Airport size could theoretically be modeled several ways. The key idea in the mo
 
 -   Sum of available seat-miles over a period of time
 
--   Sum of passenger-miles over a period of time : $\text{flight distance}\times \text{# passengers on flight}$
+-   Sum of passenger-miles over a period of time : $\text{flight distance}\times \text{passengers on flight}$
 
 The last two methods may have the advantage of being multidimensional because it can not only account for flights and passengers combined, which may say something about the size of aircraft. Available seat-miles might best represent capacity. Unfortunately, the focus on passengers excludes cargo flights, and this may be significant category that should be incorporated.
 
@@ -399,7 +399,7 @@ curve(gamma_pdf, from=0, to=pm_max)
 
 ### Enplanements
 
-Another way to measure the size of an airport may be "enplanements" which I think means how many people it got onto planes. This data is contained in some airport financials and I will look at it here based on a smaller sample of airports to see what distribution seems to make sense.
+Another way to measure the size of an airport may be "enplanements" which I think means how many people it got onto planes. This data is contained in some airport financials and I will look at it here based on a smaller sample of airports to see what distribution seems to make sense. While enplanements are good for measuring a single airport's size, its not as easily calculated from flight data and flight miles or revenue passenger-miles. Additionally, this particular data set comes from voluntarily self-reported data. Consequently, data is too frequently missing and it's accuracy may not always be accurate.
 
 ```{r}
 #| warning: false
@@ -420,5 +420,9 @@ Apparently, there are only 281 airports reporting positive enplanements. I will 
 
 ```{r}
 ggplot(filter(fin, Enplanements > 0)) +
-  geom_density(aes(x = Enplanements))
+  geom_density(aes(x = Enplanements)) +
+  labs(title = "Distribution of reported enplanements",
+       x = "Enplanements",
+       y = "Density") +
+  theme_clean()
 ```

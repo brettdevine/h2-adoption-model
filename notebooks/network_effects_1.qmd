@@ -6,9 +6,12 @@ This notebook recreates work previously shared with the CAS team, but now in a m
 The model will continue to grow, expand, and improve as we add new features.
 These cells will create some of the graphs used in the paper, presentations, and test the plotting functions.
 ```{r}
+#| warning: false
+
 rm(list = ls())
-source("./h2_adopt_model.R")
-source("./h2_adopt_model_plots.R")
+setwd("../src/")
+source("h2_adopt_model.R")
+source("h2_adopt_model_plots.R")
 
 library(tidyverse)
 ```

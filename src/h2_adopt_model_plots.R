@@ -10,6 +10,7 @@ library(tidyverse)
 library(ggthemes)
 library(ggtext)
 library(latex2exp)
+
 source("h2_adopt_model.R")
 
 ne_plot_simple_data <- function(model) {
@@ -79,7 +80,7 @@ ne_plot_simple <- function(curve_data, ne_data, plot_name = "ne-plot-simple.pdf"
         , height = 5
         , units = "in"
         , dpi = "retina"
-        , path = "./plot-img/")
+        , path = "../img/")
 }
 
 iteration_path <- function(s0, model_params, cdf, n = 20) {
@@ -207,7 +208,7 @@ ne_plot_recursive <- function(plot_data, model_params, plot_name = "ne-plot-recu
                 , height = 5
                 , units = "in"
                 , dpi = "retina"
-                , path = "./plot-img/")
+                , path = "../img/")
     } else {
         curve_df <- plot_data[[1]]
         above_zero_path <- plot_data[[2]]
@@ -250,7 +251,7 @@ ne_plot_recursive <- function(plot_data, model_params, plot_name = "ne-plot-recu
                 , height = 5
                 , units = "in"
                 , dpi = "retina"
-                , path = "./plot-img/")
+                , path = "../img/")
     }
 }
 
