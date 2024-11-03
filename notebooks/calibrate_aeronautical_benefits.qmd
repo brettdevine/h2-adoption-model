@@ -1,0 +1,236 @@
+---
+title: "Calibrate Aeronautical Benefits"
+format: html
+editor: visual
+---
+
+Each airport decides to adopt hydrogen infrastructure based on its relative costs and benefits. The benefits are in terms of the operating profits (if any) from providing hydrogen services and the costs are the purchase, investment, and installation costs.
+
+## Installation Costs
+
+The airport faces a specific capital expenditure in order to install the liquid hydrogen infrastructure. The expenditure is assumed to involve both fixed variable costs based on the airport's size. Letting $Q_i$ be the size of airport $i$ in passenger-miles we would have a total cost function of
+
+$$
+C(Q_i) = X + c \eta \nu Q_i
+$$
+
+Where $c$ is the marginal cost in dollars of each additional metric kiloton of LH2 supply capacity desired. The coefficient $\nu$ is the fraction of the airport's size/capacity $Q_i$ that airports anticipate needing to meet with hydrogen fueling services. For example, if $\nu = 0.5$ then it would signal that airports installing hydrogen infrastructure today, would expect that in the future they'll want to be able to service at least 50% of their capacity in hydrogen aircraft. This is assumed a fixed parameter across all airports. The parameter $\eta$ is a conversion coefficient giving the average kilotons of LH2 per passenger-mile so that the cost function can be in terms of passenger miles instead of kilotons of LH2.
+
+The values of these parameters are difficult to calibrate, as no existing infrastructure exists to generate data for estimation purposes. Instead, we will need to rely on research. A few papers cover the expected costs of installing liquid hydrogen refueling infrastructure. Particularly useful are the papers,
+
+-   "Hydrogen-powered aviation and its reliance on green hydrogen infrastructure - Review and research gaps" (J. Hoelzen et al, 2022), and
+
+-   H2-powered aviation at airports - Design and economics of LH2 refueling systems (J. Hoelzen, et al 2022).
+
+The last paper provides two useful ways to represent infrastructure costs. Currently, the model involves the present value (required upfront today costs) of capital expenditures (approach 1). These costs are compared to the present value of the future stream of operating benefits. A second approach is to model all costs as distributed (amortized) into the future using annuity payments and an appropriate interest rate. Both approaches should be considered, and the paper provides a useful way to get a general stab at each of these.
+
+### Approach 1
+
+The tables shown below are from the paper and detail out some hypothetical costs for airports of different sizes in present value terms. The first table details costs for refueling trucks and the second for pipelines. Several times in the paper the costs for larger airports coincide quite closely.
+
+![](images/H2_Cost_TableB1.png)
+![](images/H2_Cost_TableB2.png)
+
+In each of the tables the authors detail a cost (in million USD) for each of the primary components of an LH2 refueling setup for an airport demanding 80 kt of LH2 annually and a large airport demanding 400 kt of LH2 per year. A (over?) simplified approach to convert this into our needed function would be to use the two pairs of costs and quantities to form a line. Using the equation of a line we can calculate a curve (see `/data/Investment_Calibration.xlsx`)
+
+$$
+CEX = 173.75 + 2.7031 kt_{LH2}
+$$
+
+This would give us an intercept (fixed minimum cost of ) 173.75 million dollars, plus 2.7031 million per kiloton of LH2 annual capacity. We would then set $c = 2.7031$ and we are left with calculating value of $\eta$ and $\nu$. Airport usage of fuel is hard to determine per airport, as the data is not apparently easy to find. It might be inferred from the number of flights, enplanements, available seat-miles, or revenue passenger-miles. Based on available data, fuel usage by all airports together by month was determined and these aggregate monthly fuel usages could be divided by the aggregate monthly revenue passenger-miles. The resulting 12 fuel usage to passenger-miles ratios can be averaged to arrive at an overall average relationship between the amount of fuel used and to produce the revenue passenger-miles. This rate can then be used as an estimate of $\eta$ which tells the average kilotons of LH2 per revenue passenger-mile and will allow the conversion of passenger-mile units of airport size/capacity to millions of USD in the cost function.
+
+Approach 1 has the advantage of being quick, relatively simple, and does not require remodeling the airports decision in the mathematical model. But it has limitations in that it may be an oversimplified relationship (linear instead of nonlinear) and may not include all costs involved in hydrogen adoption and operation.
+
+### Approach 2
+
+Approach two will require a remodeling of the airport's decision. In this approach, our goal be to essentially model all infrastructure investment cost as being 'financed' in the sense that the airport borrows all the funds and just makes annual payments on the principle and interest. This allows annual costs in a year to be compared with annual benefits in a year and so that we compare apples-to-apples in each year's period. However, a net present value style analysis may still be appropriate for these future streams of benefits and costs.
+
+This approach may be valuable because of research efforts in the papers discussed. This research uses the investment, operating, and maintenance costs to develop an average total cost function. Consider the tables below.
+
+![](images/H2_ATC_Fig5.png)
+
+![](images/H2_ATC_Fig8.png)
+
+The tables can be used to infer and calibrate a total cost function for installation. The outcome of the tables is a measure of costs in terms of USD per kilogram of LH2 for a chosen level of LH2 annual capacity in metric tons of LH2. Cost curves for both refueling trucks and pipelines are projected for different scenarios and sizes of airports. The curves seen in the graphs can be distilled into a useful cost function as follows. First, we note that the cost curves indicated a monotonic non-increasing average total cost. The curve is nonlinear and we would need the cost curve to go through some of the key highlighted portions of the graph.
+
+In economics the total cost function $TC(Q)$ yields the total production costs required to produce $q$ units of output. In this case, $Q$ is the chosen capacity (in tons of LH2) of the airport's hydrogen infrastructure. The average total cost if measured simply as $ATC(Q) = TC(Q)/Q$. By assuming the above graphs are a suitable average total cost we can recover the total cost function simply by multiplying by $Q$.
+
+Given the y-intercept in the graph, we might specify the following equation.
+
+$$
+ATC = \frac{a}{1 + bQ}
+$$
+
+where we could set $a = 4.2$ for the highest cost curve in the second graph as the anticipated cost per kilogram of LH2 for capacities near 0. Then we can use the example points in the graph to calibrate the value of $b$.
+
+| Point | X        | Y     |
+|-------|----------|-------|
+| SP2   | 20,000   | 3.6   |
+| SP1   | \~55,000 | \~3.1 |
+| SP0   | 125,000  | 2.8   |
+
+Use the X,Y combinations in the table to find the best fitting value of $b$ to go through as close to those points as possible (solve the system or use least-squares approximation). With the resulting $\hat{b}$ we could then compute the total cost function as below.
+
+$$
+TC(Q) = \frac{4.2 Q}{1 + bQ}
+$$
+
+## Operating Revenue and Cost Calibration with Data
+
+Using the dataset of airport financials (optionally self-reported by US airports through government forms) we can attempt some calibrations.
+
+```{r}
+#| warning: false
+#| message: false
+# Remove all elements from memory
+# and load tidyverse packages
+rm(list = ls())
+library(tidyverse)
+
+# Load flight data and financial data
+airport_pm <- read_csv("../data/airports/airport_pm.csv")
+fin <- read_csv("../data/airports/airport_financials.csv")
+```
+
+The financial data does includes several columns related to aeronautical service revenue, terminal fees, etc. These are important measures and are more fitting to specific modeling task. However, the model compares net operating benefits, which means operating costs must be included. Unfortunately, the operating costs in the data are not broken down by aeronautical services. This matters because LH2 based flight is likely to cost more, not just because of fuel, but because of other operating costs and facts associated with this type of fuel. For example, hydrogen loss, and longer refueling times. To stick with an operating revenue and expense on the same "level" we'll attempt to calibrate using total operating revenues and costs. But it should be noted this may include other factors that may not be as directly relevant to airport's adoption decision. We can also look at just the fuel sales net profits.
+
+```{r}
+fin %>%
+  mutate(operating_profit = `Total Operating Revenue` - `Total Operating Expenses`) %>%
+  select(LOC_ID, `Total Operating Revenue`, `Total Operating Expenses`, operating_profit, `Fuel sales net profit/loss or fuel flowage fees`) %>%
+  rename(tot_oper_rev = `Total Operating Revenue`) %>%
+  rename(tot_oper_exp = `Total Operating Expenses`) %>%
+  rename(fuel_net_profit = `Fuel sales net profit/loss or fuel flowage fees`) -> fin_red
+```
+
+With the reduced data set we can now join it with calculated passenger miles per airport and convert revenue and cost figures from USD to millions of USD.
+
+```{r}
+airport_pm %>% left_join(fin_red, by = join_by(AIRPORT == LOC_ID)) %>%
+  filter(!is.na(operating_profit)) %>%
+  mutate(tot_oper_rev = tot_oper_rev/1000000) %>%
+  mutate(tot_oper_exp = tot_oper_exp/1000000) %>%
+  mutate(fuel_net_profit = fuel_net_profit/1000000) %>%
+  mutate(operating_profit = operating_profit/1000000) %>%
+  mutate(fuel_profit_pm = fuel_net_profit/(orig_pm/1000000)) -> joined_df
+
+summary(joined_df)
+```
+
+We can optionally remove outliers which may help improve fit, if we feel special rule-breaking conditions apply to those outlier observations.
+
+```{r}
+summary(joined_df$orig_pm)
+```
+
+The large skew in the data may suggest benefits to removing outliers. However, this can be statistically tricky when we consider the optional and self-reported status of the financial data which could include accidental or strategic reporting errors. Furthermore, missing data exists and it may not be missing completely at random.
+
+```{r}
+# Remove passenger-mile outliers
+
+
+# Remove outliers with extreme profit/loss
+#joined_df <- joined_df %>%
+#  filter(tot_oper_rev>0, tot_oper_exp>0) 
+
+#prof_outliers <- boxplot(joined_df$prof_loss, plot=FALSE)$out
+#joined_df <- joined_df[-which(joined_df$prof_loss %in% prof_outliers),]
+
+summary(joined_df$orig_pm)
+```
+
+```{r}
+m_rev <- lm(tot_oper_rev ~ orig_pm+0, data = joined_df)
+m_rev_df <- joined_df
+m_rev_df["resid"] = m_rev$residuals
+rev_resid_out <- boxplot(m_rev_df$resid, plot = FALSE)$out
+m_rev_df <- m_rev_df[-which(m_rev_df$resid %in% rev_resid_out), ]
+```
+
+```{r}
+ggplot(joined_df, aes(x = orig_pm, y = tot_oper_rev)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x+0)
+  
+```
+
+```{r}
+m_exp <- lm(tot_oper_exp ~ orig_pm+0, data = joined_df)
+m_exp_df <- joined_df
+m_exp_df["resid"] = m_exp$residuals
+exp_resid_out <- boxplot(m_exp_df$resid, plot = FALSE)$out
+m_exp_df <- m_exp_df[-which(m_exp_df$resid %in% exp_resid_out), ]
+```
+
+```{r}
+ggplot(joined_df, aes(x = orig_pm, y = tot_oper_exp)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x+0)
+```
+
+```{r}
+pm_out <- boxplot(joined_df$orig_pm, plot=FALSE)$out
+prof_df <- joined_df
+prof_df <- prof_df[-which(prof_df$orig_pm %in% pm_out), ]
+
+prof_df = prof_df %>%
+  filter(tot_oper_rev>0, tot_oper_exp>0)
+
+prof_out <- boxplot(prof_df$operating_profit, plot=FALSE)$out
+prof_df <- prof_df[-which(prof_df$operating_profit %in% prof_out), ]
+
+m_prof <- lm(operating_profit ~ orig_pm, data = joined_df)
+summary(m_prof)
+
+ggplot(joined_df, aes(x = orig_pm, y = operating_profit)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+```{r}
+fuel_out <- boxplot(joined_df$fuel_net_profit, plot=FALSE)$out
+fuel_df <- joined_df
+fuel_df <- fuel_df[-which(fuel_df$fuel_net_profit %in% fuel_out), ]
+
+ggplot(fuel_df, 
+       aes(x = orig_pm, y = fuel_net_profit)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x +0)
+```
+
+```{r}
+m_rev <- lm(tot_oper_rev ~ orig_pm+0, data = joined_df)
+summary(m_rev)
+m_exp <- lm(tot_oper_exp ~ orig_pm+0, data = joined_df)
+summary(m_exp)
+```
+
+```{r}
+format(coef(m_rev), scientific=F)
+
+format(coef(m_exp), scientific=F)
+```
+
+```{r}
+ggplot(joined_df, aes(x = fuel_profit_pm)) + 
+  geom_histogram()
+```
+
+```{r}
+joined_df %>%
+  mutate(rev_pm = tot_oper_rev / orig_pm) %>%
+  mutate(exp_pm = tot_oper_exp / orig_pm) %>%
+  mutate(fuel_pm = fuel_net_profit / orig_pm) %>%
+  summarize(avg_rev_pm = mean(rev_pm),
+            avg_exp_pm = mean(exp_pm),
+            avg_fuel_pm = mean(fuel_pm)) -> sres
+
+format(as.numeric(sres[1, "avg_rev_pm"]), scientific = F)
+format(as.numeric(sres[1,"avg_exp_pm"]), scientific=F)
+format(as.numeric(sres[1,"avg_fuel_pm"]), scientific = F)
+```
+
+```{r}
+format(as.numeric(coef(m_rev)), scientific = F)
+format(as.numeric(coef(m_exp)), scientific=F)
+```
