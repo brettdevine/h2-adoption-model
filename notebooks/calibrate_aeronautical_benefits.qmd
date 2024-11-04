@@ -75,6 +75,25 @@ $$
 TC(Q) = \frac{4.2 Q}{1 + bQ}
 $$
 
+## Operating Revenue and Costs
+
+The airport's decision to invest in LH2 infrastructure in the model comes from balancing the present value of future net operating benefits gained from adopting to the upfront cost of adopting. The present value of the operating benefits are given below.
+
+$$
+\frac{F_{H,Rev} - F_{H,Exp}}{\delta - \gamma} \cdot \alpha (S) \cdot S \cdot Q_i
+$$
+
+Where $F_{H,Rev}$ and $F_{H,Exp}$ are the operating revenue and expenses respectively for hydrogen services. These values are unknown as no such hydrogen operations have been conducted at scale. Instead of estimating these directly, we can make them relative to the price of kerosene jet fuel. Multiplying the revenues and expenses by 1 in the respective forms $F_{K,Rev}/F_{K,Rev}$ and $F_{K,Exp}/F_{K,Exp}$ we can put the hydrogen net benefit expression in relative terms to conventional jet fuels.
+
+$$
+\begin{align}
+&= \frac{\frac{F_{H,Rev}}{F_{K,rev}}F_{K,Rev} - \frac{F_{H,Exp}}{F_{K,Exp}}F_{K,Exp}}{\delta - \gamma} \cdot \alpha(S) \cdot S \cdot Q_i \\
+&= \frac{\tilde{F}_{H,Rev} \cdot F_{K,Rev} - \tilde{F}_{H,Exp}\cdot F_{K,Exp}}{\delta - \gamma} \cdot \alpha(S) \cdot S \cdot Q_i
+\end{align}
+$$
+
+In the above expression we now characterize the LH2 operating revenue and expenses as multiples of the operating revenue and expenses of jet fuel. For example, if $\tilde{F}_{H,Rev}$ were set to 1, then the operating revenues per passenger-mile would be equivalent to that of jet fuel. If instead the value were 0.9, then it would signal operating revenues for LH2 that are 90% of the operating revenue per passenger mile for jet fuel. Similarly, if $\tilde{F}_{H,Exp} = 1.3$, then it would signify LH2 operating expenses that are 30% higher than the operating expenses per passenger-mile for jet fuel.
+
 ## Operating Revenue and Cost Calibration with Data
 
 Using the dataset of airport financials (optionally self-reported by US airports through government forms) we can attempt some calibrations.
@@ -86,6 +105,7 @@ Using the dataset of airport financials (optionally self-reported by US airports
 # and load tidyverse packages
 rm(list = ls())
 library(tidyverse)
+library(ggthemes)
 
 # Load flight data and financial data
 airport_pm <- read_csv("../data/airports/airport_pm.csv")
@@ -139,24 +159,43 @@ The large skew in the data may suggest benefits to removing outliers. However, t
 summary(joined_df$orig_pm)
 ```
 
+The least-squares estimation procedure can be used to obtain measures of the intercept and slope of predominantly linear relationships. Statistical soundness typically requires estimation of both an intercept and a slope to get the best linear projection. However, our model is not set up to accept an intercept but needs just the slope. Omitting the constant column (y-intercept) from the model poses some statistical issues and reduces the accuracy of predictions. As will be seen, the resulting "model" line will be underfit for a lot of the data. However, the approach buys us a quick approximation that has the simplicity of only a single parameter that can be plugged directly into the model.
+
+Future revisions and improvements of the model should include model changes to accept more accurate functions for revenue and expenses per passenger-mile.
+
 ```{r}
+# Estimate the simple bivariate linear model
+# without a y-intercept
 m_rev <- lm(tot_oper_rev ~ orig_pm+0, data = joined_df)
 m_rev_df <- joined_df
-m_rev_df["resid"] = m_rev$residuals
-rev_resid_out <- boxplot(m_rev_df$resid, plot = FALSE)$out
-m_rev_df <- m_rev_df[-which(m_rev_df$resid %in% rev_resid_out), ]
+
+# Uncomment these code lines only if you wish to remove
+# observations (airports) with outlier model residuals.
+# --------
+#m_rev_df["resid"] = m_rev$residuals
+#rev_resid_out <- boxplot(m_rev_df$resid, plot = FALSE)$out
+#m_rev_df <- m_rev_df[-which(m_rev_df$resid %in% rev_resid_out), ]
 ```
 
 ```{r}
 ggplot(joined_df, aes(x = orig_pm, y = tot_oper_rev)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x+0)
+  geom_smooth(method = "lm", formula = y ~ x+0) +
+  labs(title = "Operating Revenue vs. Originating Revenue Passenger-miles",
+       x = "Passenger-miles",
+       y = "Total Operating Revenue (Millions $)") +
+  theme_clean()
   
 ```
 
 ```{r}
+# Estimate the simple bivariate linear model
+# without a y-intercept
 m_exp <- lm(tot_oper_exp ~ orig_pm+0, data = joined_df)
 m_exp_df <- joined_df
+# Uncomment these code lines only if you wish to remove
+# observations (airports) with outlier model residuals.
+# --------
 m_exp_df["resid"] = m_exp$residuals
 exp_resid_out <- boxplot(m_exp_df$resid, plot = FALSE)$out
 m_exp_df <- m_exp_df[-which(m_exp_df$resid %in% exp_resid_out), ]
@@ -165,17 +204,33 @@ m_exp_df <- m_exp_df[-which(m_exp_df$resid %in% exp_resid_out), ]
 ```{r}
 ggplot(joined_df, aes(x = orig_pm, y = tot_oper_exp)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x+0)
+  geom_smooth(method = "lm", formula = y ~ x+0) +
+  labs(title = "Operating Expenses vs Originating Revenue Passenger-miles",
+       x = "Passenger-miles",
+       y = "Total Operating Expenses (Millions $)") +
+  theme_clean()
 ```
 
-```{r}
-pm_out <- boxplot(joined_df$orig_pm, plot=FALSE)$out
-prof_df <- joined_df
-prof_df <- prof_df[-which(prof_df$orig_pm %in% pm_out), ]
+In the plot above, you can see (similar to revenues) that many of the data points and small airports are well above the regression line. Allowing an intercept will result in a positive upward shift of the line as operating expenses at airports with really low passenger miles are still quite high. This means that expenses (and revenues) are both underestimated for smaller airports. Since we take the difference of these, some of the underestimation will cancel out, but much may still remain.
 
+Instead of focusing on revenues and expenses separately, we can view and possibly estimate the difference as profit. This approach leads to some complications, however. The most notable of which is the large number of airports with operating losses, something not considered in the model as negative numbers will throw off the cutoff ratio used to decide on LH2 adoption.
+
+```{r}
+# The following three lines of code remove passenger mile outliers
+# according to the 1.5 the Interquartile range (IQR) rule
+# from the data 
+# --------
+#pm_out <- boxplot(joined_df$orig_pm, plot=FALSE)$out
+#prof_df <- joined_df
+#prof_df <- prof_df[-which(prof_df$orig_pm %in% pm_out), ]
+
+# Filter out airports where either revenues or expenses are
+# missing or reported as zero.
 prof_df = prof_df %>%
   filter(tot_oper_rev>0, tot_oper_exp>0)
 
+# The following two lines of code filter out operating profit
+# outliers according to the 1.5 IQR rule
 prof_out <- boxplot(prof_df$operating_profit, plot=FALSE)$out
 prof_df <- prof_df[-which(prof_df$operating_profit %in% prof_out), ]
 
@@ -184,10 +239,18 @@ summary(m_prof)
 
 ggplot(joined_df, aes(x = orig_pm, y = operating_profit)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x)
+  geom_smooth(method = "lm", formula = y ~ x) +
+  labs(title = "Operating Profit vs. Originating Revenue Passenger-miles",
+       x = "Passenger-miles",
+       y = "Operating Profit (Millions $)") +
+  theme_clean()
 ```
 
+We can also explore the relationship between fuel net profits, although this focus on only fuel sales may not incorporate all the aeronautical services appropriate for our mode's use case. However, this is one of the only other columns in the data that incorporates net value (costs) instead of only revenues.
+
 ```{r}
+# The following three lines remove outliers in terms of net profit
+# from the data before plotting using the 1.5 * IQR rule.
 fuel_out <- boxplot(joined_df$fuel_net_profit, plot=FALSE)$out
 fuel_df <- joined_df
 fuel_df <- fuel_df[-which(fuel_df$fuel_net_profit %in% fuel_out), ]
@@ -198,6 +261,10 @@ ggplot(fuel_df,
   geom_smooth(method = "lm", formula = y ~ x +0)
 ```
 
+### Estimating the Coefficients
+
+After exploring the relationships and modeling trade-offs, we can estimate the actual parameters for possible use in the model.
+
 ```{r}
 m_rev <- lm(tot_oper_rev ~ orig_pm+0, data = joined_df)
 summary(m_rev)
@@ -206,15 +273,13 @@ summary(m_exp)
 ```
 
 ```{r}
-format(coef(m_rev), scientific=F)
-
-format(coef(m_exp), scientific=F)
+F_KRev <- format(coef(m_rev), scientific=F)[[1]]
+F_KExp <- format(coef(m_exp), scientific=F)[[1]]
+paste("F_KRev =", F_KRev)
+paste("F_KExp =", F_KExp)
 ```
 
-```{r}
-ggplot(joined_df, aes(x = fuel_profit_pm)) + 
-  geom_histogram()
-```
+For comparison, we could also calculate the average revenue, expense, and fuel profit per passenger-mile by simply dividing each respective quantity by the airport's passenger-miles and then taking the average across all airports. Doing so results in the estimates below.
 
 ```{r}
 joined_df %>%
@@ -225,12 +290,7 @@ joined_df %>%
             avg_exp_pm = mean(exp_pm),
             avg_fuel_pm = mean(fuel_pm)) -> sres
 
-format(as.numeric(sres[1, "avg_rev_pm"]), scientific = F)
-format(as.numeric(sres[1,"avg_exp_pm"]), scientific=F)
-format(as.numeric(sres[1,"avg_fuel_pm"]), scientific = F)
-```
-
-```{r}
-format(as.numeric(coef(m_rev)), scientific = F)
-format(as.numeric(coef(m_exp)), scientific=F)
+paste("Average Revenue per PM :", format(as.numeric(sres[1, "avg_rev_pm"]), scientific = F))
+paste("Average Expense per PM :", format(as.numeric(sres[1,"avg_exp_pm"]), scientific=F))
+paste("Average FuelProf per PM:", format(as.numeric(sres[1,"avg_fuel_pm"]), scientific = F))
 ```
