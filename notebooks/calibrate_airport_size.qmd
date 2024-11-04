@@ -43,7 +43,7 @@ rm(list = ls())
 library(tidyverse)
 library(ggthemes)
 
-df <- read_csv("./data/airports/T_T100_MARKET_ALL_CARRIER.csv") %>%
+df <- read_csv("../data/airports/T_T100_MARKET_ALL_CARRIER.csv") %>%
   filter(DEST_COUNTRY == "US" | ORIGIN_COUNTRY == "US") %>%
   mutate(domestic = ifelse(DEST_COUNTRY=="US" & ORIGIN_COUNTRY=="US", 1, 0))
 ```
@@ -54,7 +54,7 @@ We read in the airport identifying data and filter for US airports and creating 
 #| warning: false
 #| message: false
 # Load airport code support table
-aircode = read_csv("./data/airports/T_MASTER_CORD.csv")
+aircode = read_csv("../data/airports/T_MASTER_CORD.csv")
   
 airport_names = aircode %>%
   filter(AIRPORT_COUNTRY_CODE_ISO == "US") %>%
@@ -179,7 +179,7 @@ orig_pm %>%
 airport_pm = airport_pm[!duplicated(airport_pm), ]
 
 # Write the dataframe to a CSV file for later merging
-write_csv(airport_pm, "./data/airports/airport_pm.csv")
+write_csv(airport_pm, "../data/airports/airport_pm.csv")
 ```
 
 A quick descriptive summary of the distribution of passenger-miles is shown below, along with calculation of the 3rd quartile for visualization purposes.
@@ -404,7 +404,7 @@ Another way to measure the size of an airport may be "enplanements" which I thin
 ```{r}
 #| warning: false
 #| message: false
-fin = read_csv("./data/airports/airport_financials.csv")
+fin = read_csv("../data/airports/airport_financials.csv")
 ```
 
 How many unique airport codes are listed with positive enplanement numbers?
