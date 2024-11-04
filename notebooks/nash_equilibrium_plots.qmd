@@ -95,6 +95,57 @@ The model below shows one particular calibration.
 It does not currently result in any positive adoption equilibrium.
 Several factors must be adjusted significantly to get adoption to occur.
 
+We will create a set of model parameters that are calibrated to reflect the current reality as much as possible.
+
+For clarity, the key model parameters aside from the CDF are:
+
+-   `"p_h"`: Relative price of LH2 to kerosene-based jet fuel faced by airlines
+
+-   `"f_k_rev"`: Millions USD operating revenue per passenger-mile for jet fuel
+
+-   `"f_k_exp"`: Millions USD operating expenses per passenger-mile for jet fuel
+
+-   `"f_h_rev`": Operating revenue per passenger-mile for hydrogen relative to jet fuel.
+    Value of 1 implies the same revenue per passenger-mile as jet fuel, 1.2 is 1.2 times that of jet fuel, i.e., 20% higher.
+    While 0.85 would imply hydrogen operating revenues per passenger-mile are 85% (15% lower) of that for jet fuel.
+
+-   `"f_h_exp"`: Operating expense per passenger-mile for hydrogen relative to jet fuel.
+    Same logic as relative operating revenue.
+
+-   `"delta"`: Discount rate in $(0,1)$ to applied to benefits and costs occurring in the future.
+    Typically the weighted average cost of capital to the airport is used as a measure here.
+    But higher values can imply greater "impatience", while lower values imply greater "patience".
+
+-   `"gamma"`: Growth rate in $[0, \delta)$ is the rate at which operating revenues and expenses are expected to grow as a whole going into the future.
+    This may be set to zero if we have growth in the individual parameters for revenue and expenses.
+    Or it may be positive and reflect the inflation rate if $\delta$ is the nominal interest rate faced by the airport.
+    This would yield an overall effective discount rate close to the real interest rate.
+
+-   `"x"`: The fixed cost portion in Million USD (y-intercept) of the adoption cost function.
+    It is the minimal capital expenditure required for an airport with very small capacity to even get started.
+
+-   `"c_x"` : The marginal capital expenditure (cost) in Million USD per kiloton of LH2.
+    $Million\;USD/kt\;LH2$
+
+-   `"eta"`: The conversion rate between kilotons of LH2 and passenger-miles.
+    The capital expenditure function derived from the research paper examples takes annual kilotons of LH2 as an input and returns cost in millions.
+    Using annual passenger-miles as our measure of airport size we need to convert this function to annual passenger-miles.
+    $c_x \times \eta = \frac{Million\; USD}{kt\; LH2} \times \frac{kt\; LH2}{pm} = \frac{Million\; USD}{pm}$.
+
+-   `"nu"`: The percent or proportion of an airport's annual capacity they desire to reflect the capacity of LH2 services they will provide in the future.
+    For example, an airport adopting LH2 may anticipate that demand for LH2 aeronautical services will not reach 100% of their airport's capacity.
+    So they would have no need to invest in enough infrastructure to meet that demand.
+    Instead, they may anticipate that at most 50% of their annual flight capacity will be demanded in the form of LH2.
+    In such a case we would set $\nu = 0.5$ to reflect that reality in the capital expenditure function when calculating the cost of adoption.
+
+-   `"rho"`: A substitution parameter in $(0, 1)$ belonging to the airport industry's production function.
+    As the parameter approaches 1, the inputs of Kerosene/Jetfuel and LH2 become perfect substitutes for one another.
+    This would imply that airlines will simply choose all kerosene or all LH2, whichever is cheapest.
+    As $\rho$ approaches 0, the ability to substitute one input for the other decreases in the production function and at least some positive demand for each should exist.
+    This latter scenario is difficult to imagine as jet fuel is already incorporated into all airports and aircraft.
+    But perhaps in the future other scenarios may arise where some existing airports become hydrogen only, or perhaps new hydrogen-only airports are created and airlines have to demand at least some hydrogen aeronautical services if they want to include that airport in their network.
+    Currently the value has been set to $\rho = 0.5$.
+
 ```{r}
 # Set the model parameters using a dataframe.
 calibrated_model_params <- data.frame(

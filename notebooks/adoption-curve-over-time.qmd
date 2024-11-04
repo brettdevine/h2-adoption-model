@@ -3,10 +3,11 @@ title: "Adoption Curve over Time"
 format: html
 ---
 
-For any parameter vector $\Theta$ the resulting game $\Gamma(\Theta)$ will involve the distribution of airport sizes $G(Q)$.
-This distribution is used to find the adoption rate by finding the probability (measure) that an airport has sufficient size $Q$ to warrant adoption.
-Let $Q^*$ be the airport size at which an aiport is indifferent between adoption and nonadoption.
-Then the proportion adopting is,
+The purpose of this notebook is to setup a model in terms of parameters and then "grow" those parameters forward in time for a specified number of periods. For each period, we will have a new set of parameters and we can calculate the adoption rate and any Nash equilibrium for those parameter settings. The next period will take the new parameter settings for that period and combine it with the adoption rate from the last period to get the new adoption rate. This will create a time path of adoption over the specified number of periods, in addition to other metrics.
+
+## Adoption Dynamics
+
+For any parameter vector $\Theta$ the resulting game $\Gamma(\Theta)$ will involve the distribution of airport sizes $G(Q)$. This distribution is used to find the adoption rate by finding the probability (measure) that an airport has sufficient size $Q$ to warrant adoption. Let $Q^*$ be the airport size at which an airport is indifferent between adoption and non-adoption. Then the proportion adopting is,
 
 $$
 \begin{align}
@@ -14,31 +15,79 @@ S = 1 - G(Q^*)
 \end{align}
 $$
 
-Because the $Q^*(S)$ is a function of $S$, we can derive a recursive relationship
+Because the solution $Q^*(S)$ is a function of $S$, we can derive a recursive relationship
 
 $$
 S_t = 1 - G(Q^*(S_{t-1}))
 $$
 
-and of course whenever $S_t = S_{t-1}$ we will have a fixed point.
+and of course whenever $S_t = S_{t-1}$ we will have a fixed point and Nash equilibrium of the system.
 
-In the simultaneous model dynamics of the model with network effects, adoption dynamics can "unravel" so that starting with a positive adoption rate below the tipping point can result in people "unadopting" until we get to the equilibrium value of 0 adoption.
-However, in the reality of infrastructure installation, airports who previously install, may not see fit to uninstall. 
-When "unadoption" is not a thing, then the proportion of adopters $S$ can only weakly increase, but not decrease over time.
+In the simultaneous model dynamics of a model with network effects, adoption dynamics can "unravel" so that starting with a positive adoption rate below the tipping point can result in people "unadopting" until we get to the equilibrium value of 0 adoption. However, in the reality of infrastructure installation, airports who previously install, may not see fit to uninstall in the short-term. When "unadoption" is not permitted, then the proportion of adopters $S$ can only weakly increase, but not decrease over time.
 
-The question is, what, if any, of the other model aspects or parameters are altered by an existing pool of adopters that cannot or will not remove the installed infrastructure.
+The question is, what, if any, of the other model aspects or parameters are altered by an existing pool of adopters that cannot or will not remove the installed infrastructure. This is a point not currently considered in this version of the model.
+
+### Problem of Zero Adoption 
+
+At the current time, the benefits and costs in a well calibrated model may suggest that airports will choose not to adopt. The zero adoption then becomes a steady-state that carries forever into the future. We therefore need to allow the model parameters to change over time so they can hopefully evolve into a more favorable configuration that supports airports freely adopting hydrogen infrastructure for their own economic reasons. Additionally, outside action from actors such as the government may be required to kickstart the proportion of adopting airports to a level high enough that its progress can become self-sustaining.
+
+### Parameter Growth
+
+In the current version of the model, each parameter will be accompanied by a dataframe of growth rates (with the same name as the parameters). Positive growth rates will be the annual growth in that parameter in the form of $p_{t+1} = p_t (1 + r_p)$ for some parameter $p$ with growth rate $r_p$. Negative growth rates allow parameters (such as costs) to shrink over time. These growth rates, and their calibration are important to determining scenarios in which LH2 adoption by airports will take off.
+
+### Initial Government Stimulation
+
+Because the system starts out at zero adoption, and no single airport has any rational reason to adopt when no other airport is adopting, initial investments may need to come from outside parties, such as interested donors, airlines, or the US government. Many different pathways to apply this "activation energy" to the system can be constructed. Policy instruments could include subsidized operating costs, government payment of installation costs, carbon taxes, or some combination of these and many more.
+
+For simplicity, the current model is agnostic about the specific approach and models the US government as targeting a pre-specified annual increase (in percentage point terms) in the number of airports adopting. For example, if it was desired that each year the proportion of airports with LH2 infrastructure increase by 3 percentage points, then they would take actions through several policy levers to ensure that happens. Even if it just means giving the installation for free to the airports. This will allow the model to crawl out of the zero adoption equilibrium in time to achieve meaningful CO2 mitigation if the model parameters also "grow" into a more optimal place during that time.
+
 ```{r}
+#| warning: false
+#| message: false
+# Remove all items from memory
 rm(list = ls())
-source("./h2_adopt_model.R")
-source("./h2_adopt_model_plots.R")
-```
+# Temporarily set the working directory
+# to load source code files.
+setwd("../src/")
+source("h2_adopt_model.R")
+source("h2_adopt_model_plots.R")
 
-```{r}
+# Load the necessary packages
 library(tidyverse)
 library(ggthemes)
 ```
 
-## Tipping Point over Time
+## Initial Model and Growth Paths
+
+We will create an initial set of model parameters that are calibrated to reflect the current reality as much as possible. Then we will specify growth paths for parameters so they can independently evolve over time.
+
+For clarity, the key model parameters aside from the CDF are:
+
+-   `"p_h"`: Relative price of LH2 to kerosene-based jet fuel faced by airlines
+
+-   `"f_k_rev"`: Millions USD operating revenue per passenger-mile for jet fuel
+
+-   `"f_k_exp"`: Millions USD operating expenses per passenger-mile for jet fuel
+
+-   `"f_h_rev`": Operating revenue per passenger-mile for hydrogen relative to jet fuel. Value of 1 implies the same revenue per passenger-mile as jet fuel, 1.2 is 1.2 times that of jet fuel, i.e., 20% higher. While 0.85 would imply hydrogen operating revenues per passenger-mile are 85% (15% lower) of that for jet fuel.
+
+-   `"f_h_exp"`: Operating expense per passenger-mile for hydrogen relative to jet fuel. Same logic as relative operating revenue.
+
+-   `"delta"`: Discount rate in $(0,1)$ to applied to benefits and costs occurring in the future. Typically the weighted average cost of capital to the airport is used as a measure here. But higher values can imply greater "impatience", while lower values imply greater "patience".
+
+-   `"gamma"`: Growth rate in $[0, \delta)$ is the rate at which operating revenues and expenses are expected to grow as a whole going into the future. This may be set to zero if we have growth in the individual parameters for revenue and expenses. Or it may be positive and reflect the inflation rate if $\delta$ is the nominal interest rate faced by the airport. This would yield an overall effective discount rate close to the real interest rate.
+
+-   `"x"`: The fixed cost portion in Million USD (y-intercept) of the adoption cost function. It is the minimal capital expenditure required for an airport with very small capacity to even get started.
+
+-   `"c_x"` : The marginal capital expenditure (cost) in Million USD per kiloton of LH2. $Million\;USD/kt\;LH2$
+
+-   `"eta"`: The conversion rate between kilotons of LH2 and passenger-miles. The capital expenditure function derived from the research paper examples takes annual kilotons of LH2 as an input and returns cost in millions. Using annual passenger-miles as our measure of airport size we need to convert this function to annual passenger-miles. $c_x \times \eta = \frac{Million\; USD}{kt\; LH2} \times \frac{kt\; LH2}{pm} = \frac{Million\; USD}{pm}$.
+
+-   `"nu"`: The percent or proportion of an airport's annual capacity they desire to reflect the capacity of LH2 services they will provide in the future. For example, an airport adopting LH2 may anticipate that demand for LH2 aeronautical services will not reach 100% of their airport's capacity. So they would have no need to invest in enough infrastructure to meet that demand. Instead, they may anticipate that at most 50% of their annual flight capacity will be demanded in the form of LH2. In such a case we would set $\nu = 0.5$ to reflect that reality in the capital expenditure function when calculating the cost of adoption.
+
+-   `"rho"`: A substitution parameter in $(0, 1)$ belonging to the airport industry's production function. As the parameter approaches 1, the inputs of Kerosene/Jetfuel and LH2 become perfect substitutes for one another. This would imply that airlines will simply choose all kerosene or all LH2, whichever is cheapest. As $\rho$ approaches 0, the ability to substitute one input for the other decreases in the production function and at least some positive demand for each should exist. This latter scenario is difficult to imagine as jet fuel is already incorporated into all airports and aircraft. But perhaps in the future other scenarios may arise where some existing airports become hydrogen only, or perhaps new hydrogen-only airports are created and airlines have to demand at least some hydrogen aeronautical services if they want to include that airport in their network. Currently the value has been set to $\rho = 0.5$.
+
+> **NOTE**: In the current setup below, some parameter values and growth rates are extreme in order to generate some kind of interesting results.
 
 ```{r}
 # Gamma Distribution Parameters
@@ -46,10 +95,14 @@ library(ggthemes)
 theta = 1727595.34 #188386.36
 k = 1.032609 #1.046095
 
+# Calibrated CDF to use for airport size
 calibrated_gamma_cdf <- function(x) {
   pgamma(x, shape = k, scale = theta)
 }
 
+# Create the initial model by setting
+# calibrated parameter values intended
+# to reflect the present scenario.
 init_model = data.frame(
       "p_h" = 1.2
     , "f_k_rev" = 0.00000002118861
@@ -59,12 +112,16 @@ init_model = data.frame(
     , "delta" = 0.04
     , "gamma" = 0.02
     , "x" = 173.75 
-    , "c_x" = 0 #2.7031
+    , "c_x" = 0 #2.7031 <- the actual value estimated from the data.
     , "eta" = 0.00000001425
     , "nu" = 0.5
     , "rho" = 0.5
     )
 
+# Create a dataframe of annual growth rates
+# using the corresponding model parameter
+# name. Negative numbers reflect negative
+# growth rates.
 gr = data.frame(
       "p_h" = -0.1
     , "f_k_rev" = 0.0
@@ -76,18 +133,38 @@ gr = data.frame(
     , "x" = -0.25
     , "c_x" = -0.2
     , "eta" = 0.0
-    , "nu" = 0.5
+    , "nu" = 0.0
     , "rho" = 0.0
 )
 
+# Combine paramter values, growth rates,
+# and calibrated CDF into a single named
+# list following the naming convention:
+# -----------------------------------
+# initial parameters = "init_params"
+# growth rates = "gr"
+# calibrated CDF = "cdf"
 model <- list(init_model,
               gr,
               calibrated_gamma_cdf)
 names(model) <- c("init_params", "gr", "cdf")
-
-model_set <- parameter_paths(model$init_params, model$gr)
 ```
 
+Now that we've established the initial model parameters and associated growth rates, we need to "grow" the model parameters out over time to have a dataframe of parameters where each distinct model parameter has a column and each row represents a time period (year) over which those parameters will form the airport's decision reality. To do this use the `parameter_paths()` function which takes the initial parameters and growth rates as arguments and then returns a dataset of the model parameters grown out over time.
+
+```{r}
+model_set <- parameter_paths(model$init_params, model$gr, periods = 50)
+```
+
+Once we have the set of model parameters over time, we can apply the vector-based versions of our model analysis functions to get some adoption dynamics.
+
+-   `nash_equilibria_vec()` takes the set of model parameters and cdf as arguments and returns the equilibrium (if any) at each time period.
+
+-   `adoption_dynamics()` takes the set of model parameters, cdf, and an adoption rate increment as arguments and returns the adoption curve over time. Note that the "adoption rate increment" is considered the outside (government) involvement to push airports toward adoption. If the increment is set to 0.01 then if airports *are not adopting on their own,* the government takes some action (here unspecified) to increase the proportion of airports who have adopted by 1 percentage point. Example: Currently 5% of airports have LH2 infrastructure. The model parameters for those years combined with the low $S = 0.05$ value cause no additional airports to adopt that year. The government steps in taking an action that results in $S = 0.06$ by the end of the year. The logic is setup so that if market forces (such as being above the tipping point) take over and drive airports to adopt on their own, then the government will not cause an increment in that period. This essentially means the government will force the proportion of adopting airports to increase by the increment until the tipping point is reached.
+
+-   `alpha_vec()` will take the adoption rates over time with the set of model parameters and return the $\alpha$ (proportion of airline flight fueled by LH2) over time.
+
+-   `adoption_cutoff_vec()` takes the adoption rates over time along with model parameters and returns the cutoff airport size. Essentially, the smallest an airport can be and still want to adopt, over time.
 
 ```{r}
 ne_vec <- nash_equilibria_vec(model_set, model$cdf)
@@ -100,46 +177,7 @@ ne_vec["q_cutoff"] <- adoption_cutoff_vec(ne_vec["s"], model_set)
 ```
 
 ```{r}
-# Adoption curve, tipping point, max_eq, and alpha over time.
-colors <- c("Gov. Increment of adoption" = "lightgrey"
-          , "Tipping Point Nash Equilibrium" = "green"
-          , "High Nash Equilibrium" = "blue"
-          , "Proportion Airports Adopted" = "black"
-          , "Proportion H2 Flight" = "red")
-
-
-ggplot(data = ne_vec) +
-    geom_area(aes(x = time, y = s_inc, fill = "Gov. Increment of adoption"), alpha = 0.5) +
-    geom_line(aes(x = time, y = tipp, color = "Tipping Point Nash Equilibrium")) +
-    geom_line(aes(x = time, y = high, color = "High Nash Equilibrium")) +
-    geom_line(aes(x = time, y = s, color = "Proportion Airports Adopted")) +
-    geom_line(aes(x = time, y = alpha, color = "Proportion H2 Flight")) +
-    scale_x_continuous(n.breaks=10) +
-    labs(x = "Time", y = "(%)", color = "Curve Legend", fill = "Area Legend") +
-    scale_color_manual(values = colors) +
-    theme_clean()
-```
-
-```{r}
-# Relationship between alpha(s) and s over time
-ggplot(data = ne_vec) +
-    geom_line(aes(x = alpha, y = s)
-        , linewidth = 2
-        , color = "aquamarine3") +
-    theme_clean()
-```
-
-
-```{r}
 p_df <- dynamic_adoption_plot_data(model_set, model$cdf, 0.01)
 dynamic_adoption_plot(select(p_df, -q_cutoff))
-ggsave(file="./plot-img/adoption_dynamics.pdf", width = 8, height = 4, dpi = 300)
+ggsave(file="../img/adoption_dynamics.pdf", width = 8, height = 4, dpi = 300)
 ```
-
-
-```{r}
-m = list(model$init_params, model$cdf)
-names(m) = c("model_params", "cdf")
-plot_df2 <- ne_plot_recursive_data(m)
-```
-

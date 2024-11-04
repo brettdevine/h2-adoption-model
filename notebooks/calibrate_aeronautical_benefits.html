@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Calibrate Aeronautical Benefits</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="calibrate_aeronautical_benefits_files/libs/clipboard/clipboard.min.js"></script>
+<script src="calibrate_aeronautical_benefits_files/libs/quarto-html/quarto.js"></script>
+<script src="calibrate_aeronautical_benefits_files/libs/quarto-html/popper.min.js"></script>
+<script src="calibrate_aeronautical_benefits_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="calibrate_aeronautical_benefits_files/libs/quarto-html/anchor.min.js"></script>
+<link href="calibrate_aeronautical_benefits_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="calibrate_aeronautical_benefits_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="calibrate_aeronautical_benefits_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="calibrate_aeronautical_benefits_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="calibrate_aeronautical_benefits_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Calibrate Aeronautical Benefits</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>Each airport decides to adopt hydrogen infrastructure based on its relative costs and benefits. The benefits are in terms of the operating profits (if any) from providing hydrogen services and the costs are the purchase, investment, and installation costs.</p>
+<section id="installation-costs" class="level2">
+<h2 class="anchored" data-anchor-id="installation-costs">Installation Costs</h2>
+<p>The airport faces a specific capital expenditure in order to install the liquid hydrogen infrastructure. The expenditure is assumed to involve both fixed variable costs based on the airport’s size. Letting <span class="math inline">\(Q_i\)</span> be the size of airport <span class="math inline">\(i\)</span> in passenger-miles we would have a total cost function of</p>
+<p><span class="math display">\[
+C(Q_i) = X + c \eta \nu Q_i
+\]</span></p>
+<p>Where <span class="math inline">\(c\)</span> is the marginal cost in dollars of each additional metric kiloton of LH2 supply capacity desired. The coefficient <span class="math inline">\(\nu\)</span> is the fraction of the airport’s size/capacity <span class="math inline">\(Q_i\)</span> that airports anticipate needing to meet with hydrogen fueling services. For example, if <span class="math inline">\(\nu = 0.5\)</span> then it would signal that airports installing hydrogen infrastructure today, would expect that in the future they’ll want to be able to service at least 50% of their capacity in hydrogen aircraft. This is assumed a fixed parameter across all airports. The parameter <span class="math inline">\(\eta\)</span> is a conversion coefficient giving the average kilotons of LH2 per passenger-mile so that the cost function can be in terms of passenger miles instead of kilotons of LH2.</p>
+<p>The values of these parameters are difficult to calibrate, as no existing infrastructure exists to generate data for estimation purposes. Instead, we will need to rely on research. A few papers cover the expected costs of installing liquid hydrogen refueling infrastructure. Particularly useful are the papers,</p>
+<ul>
+<li><p>“Hydrogen-powered aviation and its reliance on green hydrogen infrastructure - Review and research gaps” (J. Hoelzen et al, 2022), and</p></li>
+<li><p>H2-powered aviation at airports - Design and economics of LH2 refueling systems (J. Hoelzen, et al 2022).</p></li>
+</ul>
+<p>The last paper provides two useful ways to represent infrastructure costs. Currently, the model involves the present value (required upfront today costs) of capital expenditures (approach 1). These costs are compared to the present value of the future stream of operating benefits. A second approach is to model all costs as distributed (amortized) into the future using annuity payments and an appropriate interest rate. Both approaches should be considered, and the paper provides a useful way to get a general stab at each of these.</p>
+<section id="approach-1" class="level3">
+<h3 class="anchored" data-anchor-id="approach-1">Approach 1</h3>
+<p>The tables shown below are from the paper and detail out some hypothetical costs for airports of different sizes in present value terms. The first table details costs for refueling trucks and the second for pipelines. Several times in the paper the costs for larger airports coincide quite closely.</p>
+<p><img src="images/H2_Cost_TableB1.png" class="img-fluid"> <img src="images/H2_Cost_TableB2.png" class="img-fluid"></p>
+<p>In each of the tables the authors detail a cost (in million USD) for each of the primary components of an LH2 refueling setup for an airport demanding 80 kt of LH2 annually and a large airport demanding 400 kt of LH2 per year. A (over?) simplified approach to convert this into our needed function would be to use the two pairs of costs and quantities to form a line. Using the equation of a line we can calculate a curve (see <code>/data/Investment_Calibration.xlsx</code>)</p>
+<p><span class="math display">\[
+CEX = 173.75 + 2.7031 kt_{LH2}
+\]</span></p>
+<p>This would give us an intercept (fixed minimum cost of ) 173.75 million dollars, plus 2.7031 million per kiloton of LH2 annual capacity. We would then set <span class="math inline">\(c = 2.7031\)</span> and we are left with calculating value of <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\nu\)</span>. Airport usage of fuel is hard to determine per airport, as the data is not apparently easy to find. It might be inferred from the number of flights, enplanements, available seat-miles, or revenue passenger-miles. Based on available data, fuel usage by all airports together by month was determined and these aggregate monthly fuel usages could be divided by the aggregate monthly revenue passenger-miles. The resulting 12 fuel usage to passenger-miles ratios can be averaged to arrive at an overall average relationship between the amount of fuel used and to produce the revenue passenger-miles. This rate can then be used as an estimate of <span class="math inline">\(\eta\)</span> which tells the average kilotons of LH2 per revenue passenger-mile and will allow the conversion of passenger-mile units of airport size/capacity to millions of USD in the cost function.</p>
+<p>Approach 1 has the advantage of being quick, relatively simple, and does not require remodeling the airports decision in the mathematical model. But it has limitations in that it may be an oversimplified relationship (linear instead of nonlinear) and may not include all costs involved in hydrogen adoption and operation.</p>
+</section>
+<section id="approach-2" class="level3">
+<h3 class="anchored" data-anchor-id="approach-2">Approach 2</h3>
+<p>Approach two will require a remodeling of the airport’s decision. In this approach, our goal be to essentially model all infrastructure investment cost as being ‘financed’ in the sense that the airport borrows all the funds and just makes annual payments on the principle and interest. This allows annual costs in a year to be compared with annual benefits in a year and so that we compare apples-to-apples in each year’s period. However, a net present value style analysis may still be appropriate for these future streams of benefits and costs.</p>
+<p>This approach may be valuable because of research efforts in the papers discussed. This research uses the investment, operating, and maintenance costs to develop an average total cost function. Consider the tables below.</p>
+<p><img src="images/H2_ATC_Fig5.png" class="img-fluid"></p>
+<p><img src="images/H2_ATC_Fig8.png" class="img-fluid"></p>
+<p>The tables can be used to infer and calibrate a total cost function for installation. The outcome of the tables is a measure of costs in terms of USD per kilogram of LH2 for a chosen level of LH2 annual capacity in metric tons of LH2. Cost curves for both refueling trucks and pipelines are projected for different scenarios and sizes of airports. The curves seen in the graphs can be distilled into a useful cost function as follows. First, we note that the cost curves indicated a monotonic non-increasing average total cost. The curve is nonlinear and we would need the cost curve to go through some of the key highlighted portions of the graph.</p>
+<p>In economics the total cost function <span class="math inline">\(TC(Q)\)</span> yields the total production costs required to produce <span class="math inline">\(q\)</span> units of output. In this case, <span class="math inline">\(Q\)</span> is the chosen capacity (in tons of LH2) of the airport’s hydrogen infrastructure. The average total cost if measured simply as <span class="math inline">\(ATC(Q) = TC(Q)/Q\)</span>. By assuming the above graphs are a suitable average total cost we can recover the total cost function simply by multiplying by <span class="math inline">\(Q\)</span>.</p>
+<p>Given the y-intercept in the graph, we might specify the following equation.</p>
+<p><span class="math display">\[
+ATC = \frac{a}{1 + bQ}
+\]</span></p>
+<p>where we could set <span class="math inline">\(a = 4.2\)</span> for the highest cost curve in the second graph as the anticipated cost per kilogram of LH2 for capacities near 0. Then we can use the example points in the graph to calibrate the value of <span class="math inline">\(b\)</span>.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Point</th>
+<th>X</th>
+<th>Y</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SP2</td>
+<td>20,000</td>
+<td>3.6</td>
+</tr>
+<tr class="even">
+<td>SP1</td>
+<td>~55,000</td>
+<td>~3.1</td>
+</tr>
+<tr class="odd">
+<td>SP0</td>
+<td>125,000</td>
+<td>2.8</td>
+</tr>
+</tbody>
+</table>
+<p>Use the X,Y combinations in the table to find the best fitting value of <span class="math inline">\(b\)</span> to go through as close to those points as possible (solve the system or use least-squares approximation). With the resulting <span class="math inline">\(\hat{b}\)</span> we could then compute the total cost function as below.</p>
+<p><span class="math display">\[
+TC(Q) = \frac{4.2 Q}{1 + bQ}
+\]</span></p>
+</section>
+</section>
+<section id="operating-revenue-and-costs" class="level2">
+<h2 class="anchored" data-anchor-id="operating-revenue-and-costs">Operating Revenue and Costs</h2>
+<p>The airport’s decision to invest in LH2 infrastructure in the model comes from balancing the present value of future net operating benefits gained from adopting to the upfront cost of adopting. The present value of the operating benefits are given below.</p>
+<p><span class="math display">\[
+\frac{F_{H,Rev} - F_{H,Exp}}{\delta - \gamma} \cdot \alpha (S) \cdot S \cdot Q_i
+\]</span></p>
+<p>Where <span class="math inline">\(F_{H,Rev}\)</span> and <span class="math inline">\(F_{H,Exp}\)</span> are the operating revenue and expenses respectively for hydrogen services. These values are unknown as no such hydrogen operations have been conducted at scale. Instead of estimating these directly, we can make them relative to the price of kerosene jet fuel. Multiplying the revenues and expenses by 1 in the respective forms <span class="math inline">\(F_{K,Rev}/F_{K,Rev}\)</span> and <span class="math inline">\(F_{K,Exp}/F_{K,Exp}\)</span> we can put the hydrogen net benefit expression in relative terms to conventional jet fuels.</p>
+<p><span class="math display">\[
+\begin{align}
+&amp;= \frac{\frac{F_{H,Rev}}{F_{K,rev}}F_{K,Rev} - \frac{F_{H,Exp}}{F_{K,Exp}}F_{K,Exp}}{\delta - \gamma} \cdot \alpha(S) \cdot S \cdot Q_i \\
+&amp;= \frac{\tilde{F}_{H,Rev} \cdot F_{K,Rev} - \tilde{F}_{H,Exp}\cdot F_{K,Exp}}{\delta - \gamma} \cdot \alpha(S) \cdot S \cdot Q_i
+\end{align}
+\]</span></p>
+<p>In the above expression we now characterize the LH2 operating revenue and expenses as multiples of the operating revenue and expenses of jet fuel. For example, if <span class="math inline">\(\tilde{F}_{H,Rev}\)</span> were set to 1, then the operating revenues per passenger-mile would be equivalent to that of jet fuel. If instead the value were 0.9, then it would signal operating revenues for LH2 that are 90% of the operating revenue per passenger mile for jet fuel. Similarly, if <span class="math inline">\(\tilde{F}_{H,Exp} = 1.3\)</span>, then it would signify LH2 operating expenses that are 30% higher than the operating expenses per passenger-mile for jet fuel.</p>
+</section>
+<section id="operating-revenue-and-cost-calibration-with-data" class="level2">
+<h2 class="anchored" data-anchor-id="operating-revenue-and-cost-calibration-with-data">Operating Revenue and Cost Calibration with Data</h2>
+<p>Using the dataset of airport financials (optionally self-reported by US airports through government forms) we can attempt some calibrations.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove all elements from memory</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and load tidyverse packages</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggthemes)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Load flight data and financial data</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>airport_pm <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/airports/airport_pm.csv"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>fin <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/airports/airport_financials.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The financial data does includes several columns related to aeronautical service revenue, terminal fees, etc. These are important measures and are more fitting to specific modeling task. However, the model compares net operating benefits, which means operating costs must be included. Unfortunately, the operating costs in the data are not broken down by aeronautical services. This matters because LH2 based flight is likely to cost more, not just because of fuel, but because of other operating costs and facts associated with this type of fuel. For example, hydrogen loss, and longer refueling times. To stick with an operating revenue and expense on the same “level” we’ll attempt to calibrate using total operating revenues and costs. But it should be noted this may include other factors that may not be as directly relevant to airport’s adoption decision. We can also look at just the fuel sales net profits.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>fin <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">operating_profit =</span> <span class="st">`</span><span class="at">Total Operating Revenue</span><span class="st">`</span> <span class="sc">-</span> <span class="st">`</span><span class="at">Total Operating Expenses</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(LOC_ID, <span class="st">`</span><span class="at">Total Operating Revenue</span><span class="st">`</span>, <span class="st">`</span><span class="at">Total Operating Expenses</span><span class="st">`</span>, operating_profit, <span class="st">`</span><span class="at">Fuel sales net profit/loss or fuel flowage fees</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">tot_oper_rev =</span> <span class="st">`</span><span class="at">Total Operating Revenue</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">tot_oper_exp =</span> <span class="st">`</span><span class="at">Total Operating Expenses</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">fuel_net_profit =</span> <span class="st">`</span><span class="at">Fuel sales net profit/loss or fuel flowage fees</span><span class="st">`</span>) <span class="ot">-&gt;</span> fin_red</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With the reduced data set we can now join it with calculated passenger miles per airport and convert revenue and cost figures from USD to millions of USD.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>airport_pm <span class="sc">%&gt;%</span> <span class="fu">left_join</span>(fin_red, <span class="at">by =</span> <span class="fu">join_by</span>(AIRPORT <span class="sc">==</span> LOC_ID)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(operating_profit)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tot_oper_rev =</span> tot_oper_rev<span class="sc">/</span><span class="dv">1000000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tot_oper_exp =</span> tot_oper_exp<span class="sc">/</span><span class="dv">1000000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fuel_net_profit =</span> fuel_net_profit<span class="sc">/</span><span class="dv">1000000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">operating_profit =</span> operating_profit<span class="sc">/</span><span class="dv">1000000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fuel_profit_pm =</span> fuel_net_profit<span class="sc">/</span>(orig_pm<span class="sc">/</span><span class="dv">1000000</span>)) <span class="ot">-&gt;</span> joined_df</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(joined_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   airport_id      AIRPORT             orig_pm           tot_oper_rev      
+ Min.   :10011   Length:436         Min.   :1.730e+02   Min.   :   0.0000  
+ 1st Qu.:11282   Class :character   1st Qu.:3.535e+06   1st Qu.:   0.5598  
+ Median :12521   Mode  :character   Median :4.946e+07   Median :   4.5235  
+ Mean   :12755                      Mean   :2.612e+09   Mean   :  64.5320  
+ 3rd Qu.:14161                      3rd Qu.:5.113e+08   3rd Qu.:  26.5358  
+ Max.   :16869                      Max.   :8.553e+10   Max.   :1730.3292  
+  tot_oper_exp      operating_profit    fuel_net_profit   fuel_profit_pm     
+ Min.   :   0.000   Min.   :-167.1325   Min.   : 0.0000   Min.   :  0.00000  
+ 1st Qu.:   1.142   1st Qu.:  -4.3042   1st Qu.: 0.0000   1st Qu.:  0.00000  
+ Median :   7.519   Median :  -0.6904   Median : 0.1056   Median :  0.00059  
+ Mean   :  62.297   Mean   :   2.2347   Mean   : 1.0776   Mean   :  0.94364  
+ 3rd Qu.:  30.212   3rd Qu.:   0.0000   3rd Qu.: 0.4928   3rd Qu.:  0.00607  
+ Max.   :1522.150   Max.   : 521.5802   Max.   :91.1287   Max.   :248.57112  </code></pre>
+</div>
+</div>
+<p>We can optionally remove outliers which may help improve fit, if we feel special rule-breaking conditions apply to those outlier observations.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(joined_df<span class="sc">$</span>orig_pm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+1.730e+02 3.535e+06 4.946e+07 2.612e+09 5.113e+08 8.553e+10 </code></pre>
+</div>
+</div>
+<p>The large skew in the data may suggest benefits to removing outliers. However, this can be statistically tricky when we consider the optional and self-reported status of the financial data which could include accidental or strategic reporting errors. Furthermore, missing data exists and it may not be missing completely at random.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove passenger-mile outliers</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove outliers with extreme profit/loss</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#joined_df &lt;- joined_df %&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#  filter(tot_oper_rev&gt;0, tot_oper_exp&gt;0) </span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#prof_outliers &lt;- boxplot(joined_df$prof_loss, plot=FALSE)$out</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#joined_df &lt;- joined_df[-which(joined_df$prof_loss %in% prof_outliers),]</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(joined_df<span class="sc">$</span>orig_pm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+1.730e+02 3.535e+06 4.946e+07 2.612e+09 5.113e+08 8.553e+10 </code></pre>
+</div>
+</div>
+<p>The least-squares estimation procedure can be used to obtain measures of the intercept and slope of predominantly linear relationships. Statistical soundness typically requires estimation of both an intercept and a slope to get the best linear projection. However, our model is not set up to accept an intercept but needs just the slope. Omitting the constant column (y-intercept) from the model poses some statistical issues and reduces the accuracy of predictions. As will be seen, the resulting “model” line will be underfit for a lot of the data. However, the approach buys us a quick approximation that has the simplicity of only a single parameter that can be plugged directly into the model.</p>
+<p>Future revisions and improvements of the model should include model changes to accept more accurate functions for revenue and expenses per passenger-mile.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the simple bivariate linear model</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># without a y-intercept</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>m_rev <span class="ot">&lt;-</span> <span class="fu">lm</span>(tot_oper_rev <span class="sc">~</span> orig_pm<span class="sc">+</span><span class="dv">0</span>, <span class="at">data =</span> joined_df)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>m_rev_df <span class="ot">&lt;-</span> joined_df</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment these code lines only if you wish to remove</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># observations (airports) with outlier model residuals.</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># --------</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#m_rev_df["resid"] = m_rev$residuals</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#rev_resid_out &lt;- boxplot(m_rev_df$resid, plot = FALSE)$out</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">#m_rev_df &lt;- m_rev_df[-which(m_rev_df$resid %in% rev_resid_out), ]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(joined_df, <span class="fu">aes</span>(<span class="at">x =</span> orig_pm, <span class="at">y =</span> tot_oper_rev)) <span class="sc">+</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> y <span class="sc">~</span> x<span class="sc">+</span><span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Operating Revenue vs. Originating Revenue Passenger-miles"</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Passenger-miles"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Total Operating Revenue (Millions $)"</span>) <span class="sc">+</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="calibrate_aeronautical_benefits_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the simple bivariate linear model</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># without a y-intercept</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>m_exp <span class="ot">&lt;-</span> <span class="fu">lm</span>(tot_oper_exp <span class="sc">~</span> orig_pm<span class="sc">+</span><span class="dv">0</span>, <span class="at">data =</span> joined_df)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>m_exp_df <span class="ot">&lt;-</span> joined_df</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment these code lines only if you wish to remove</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># observations (airports) with outlier model residuals.</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># --------</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>m_exp_df[<span class="st">"resid"</span>] <span class="ot">=</span> m_exp<span class="sc">$</span>residuals</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>exp_resid_out <span class="ot">&lt;-</span> <span class="fu">boxplot</span>(m_exp_df<span class="sc">$</span>resid, <span class="at">plot =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>out</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>m_exp_df <span class="ot">&lt;-</span> m_exp_df[<span class="sc">-</span><span class="fu">which</span>(m_exp_df<span class="sc">$</span>resid <span class="sc">%in%</span> exp_resid_out), ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(joined_df, <span class="fu">aes</span>(<span class="at">x =</span> orig_pm, <span class="at">y =</span> tot_oper_exp)) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> y <span class="sc">~</span> x<span class="sc">+</span><span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Operating Expenses vs Originating Revenue Passenger-miles"</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Passenger-miles"</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Total Operating Expenses (Millions $)"</span>) <span class="sc">+</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="calibrate_aeronautical_benefits_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>In the plot above, you can see (similar to revenues) that many of the data points and small airports are well above the regression line. Allowing an intercept will result in a positive upward shift of the line as operating expenses at airports with really low passenger miles are still quite high. This means that expenses (and revenues) are both underestimated for smaller airports. Since we take the difference of these, some of the underestimation will cancel out, but much may still remain.</p>
+<p>Instead of focusing on revenues and expenses separately, we can view and possibly estimate the difference as profit. This approach leads to some complications, however. The most notable of which is the large number of airports with operating losses, something not considered in the model as negative numbers will throw off the cutoff ratio used to decide on LH2 adoption.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The following three lines of code remove passenger mile outliers</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># according to the 1.5 the Interquartile range (IQR) rule</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># from the data </span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># --------</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">#pm_out &lt;- boxplot(joined_df$orig_pm, plot=FALSE)$out</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>prof_df <span class="ot">&lt;-</span> joined_df</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">#prof_df &lt;- prof_df[-which(prof_df$orig_pm %in% pm_out), ]</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out airports where either revenues or expenses are</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># missing or reported as zero.</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>prof_df <span class="ot">=</span> prof_df <span class="sc">%&gt;%</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tot_oper_rev<span class="sc">&gt;</span><span class="dv">0</span>, tot_oper_exp<span class="sc">&gt;</span><span class="dv">0</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co"># The following two lines of code filter out operating profit</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># outliers according to the 1.5 IQR rule</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>prof_out <span class="ot">&lt;-</span> <span class="fu">boxplot</span>(prof_df<span class="sc">$</span>operating_profit, <span class="at">plot=</span><span class="cn">FALSE</span>)<span class="sc">$</span>out</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>prof_df <span class="ot">&lt;-</span> prof_df[<span class="sc">-</span><span class="fu">which</span>(prof_df<span class="sc">$</span>operating_profit <span class="sc">%in%</span> prof_out), ]</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>m_prof <span class="ot">&lt;-</span> <span class="fu">lm</span>(operating_profit <span class="sc">~</span> orig_pm, <span class="at">data =</span> joined_df)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m_prof)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = operating_profit ~ orig_pm, data = joined_df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-301.08   -1.25    3.05    4.56  316.94 
+
+Coefficients:
+              Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) -4.561e+00  1.515e+00  -3.011  0.00275 ** 
+orig_pm      2.602e-09  1.563e-10  16.642  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 30.46 on 434 degrees of freedom
+Multiple R-squared:  0.3896,    Adjusted R-squared:  0.3881 
+F-statistic:   277 on 1 and 434 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(joined_df, <span class="fu">aes</span>(<span class="at">x =</span> orig_pm, <span class="at">y =</span> operating_profit)) <span class="sc">+</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> y <span class="sc">~</span> x) <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Operating Profit vs. Originating Revenue Passenger-miles"</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Passenger-miles"</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Operating Profit (Millions $)"</span>) <span class="sc">+</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="calibrate_aeronautical_benefits_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We can also explore the relationship between fuel net profits, although this focus on only fuel sales may not incorporate all the aeronautical services appropriate for our mode’s use case. However, this is one of the only other columns in the data that incorporates net value (costs) instead of only revenues.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The following three lines remove outliers in terms of net profit</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># from the data before plotting using the 1.5 * IQR rule.</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>fuel_out <span class="ot">&lt;-</span> <span class="fu">boxplot</span>(joined_df<span class="sc">$</span>fuel_net_profit, <span class="at">plot=</span><span class="cn">FALSE</span>)<span class="sc">$</span>out</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>fuel_df <span class="ot">&lt;-</span> joined_df</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>fuel_df <span class="ot">&lt;-</span> fuel_df[<span class="sc">-</span><span class="fu">which</span>(fuel_df<span class="sc">$</span>fuel_net_profit <span class="sc">%in%</span> fuel_out), ]</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(fuel_df, </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> orig_pm, <span class="at">y =</span> fuel_net_profit)) <span class="sc">+</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> y <span class="sc">~</span> x <span class="sc">+</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="calibrate_aeronautical_benefits_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="estimating-the-coefficients" class="level3">
+<h3 class="anchored" data-anchor-id="estimating-the-coefficients">Estimating the Coefficients</h3>
+<p>After exploring the relationships and modeling trade-offs, we can estimate the actual parameters for possible use in the model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>m_rev <span class="ot">&lt;-</span> <span class="fu">lm</span>(tot_oper_rev <span class="sc">~</span> orig_pm<span class="sc">+</span><span class="dv">0</span>, <span class="at">data =</span> joined_df)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m_rev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = tot_oper_rev ~ orig_pm + 0, data = joined_df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-619.71    0.03    2.34   11.36  411.18 
+
+Coefficients:
+         Estimate Std. Error t value Pr(&gt;|t|)    
+orig_pm 2.119e-08  2.615e-10   81.02   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 52.91 on 435 degrees of freedom
+Multiple R-squared:  0.9378,    Adjusted R-squared:  0.9377 
+F-statistic:  6563 on 1 and 435 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>m_exp <span class="ot">&lt;-</span> <span class="fu">lm</span>(tot_oper_exp <span class="sc">~</span> orig_pm<span class="sc">+</span><span class="dv">0</span>, <span class="at">data =</span> joined_df)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m_exp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = tot_oper_exp ~ orig_pm + 0, data = joined_df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-346.49    0.67    5.21   20.07  427.51 
+
+Coefficients:
+         Estimate Std. Error t value Pr(&gt;|t|)    
+orig_pm 1.871e-08  2.510e-10   74.56   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 50.78 on 435 degrees of freedom
+Multiple R-squared:  0.9274,    Adjusted R-squared:  0.9273 
+F-statistic:  5559 on 1 and 435 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>F_KRev <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">coef</span>(m_rev), <span class="at">scientific=</span>F)[[<span class="dv">1</span>]]</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>F_KExp <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">coef</span>(m_exp), <span class="at">scientific=</span>F)[[<span class="dv">1</span>]]</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"F_KRev ="</span>, F_KRev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "F_KRev = 0.00000002118861"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"F_KExp ="</span>, F_KExp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "F_KExp = 0.00000001871368"</code></pre>
+</div>
+</div>
+<p>For comparison, we could also calculate the average revenue, expense, and fuel profit per passenger-mile by simply dividing each respective quantity by the airport’s passenger-miles and then taking the average across all airports. Doing so results in the estimates below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>joined_df <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">rev_pm =</span> tot_oper_rev <span class="sc">/</span> orig_pm) <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">exp_pm =</span> tot_oper_exp <span class="sc">/</span> orig_pm) <span class="sc">%&gt;%</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fuel_pm =</span> fuel_net_profit <span class="sc">/</span> orig_pm) <span class="sc">%&gt;%</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">avg_rev_pm =</span> <span class="fu">mean</span>(rev_pm),</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">avg_exp_pm =</span> <span class="fu">mean</span>(exp_pm),</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">avg_fuel_pm =</span> <span class="fu">mean</span>(fuel_pm)) <span class="ot">-&gt;</span> sres</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Average Revenue per PM :"</span>, <span class="fu">format</span>(<span class="fu">as.numeric</span>(sres[<span class="dv">1</span>, <span class="st">"avg_rev_pm"</span>]), <span class="at">scientific =</span> F))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Average Revenue per PM : 0.00001009515"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Average Expense per PM :"</span>, <span class="fu">format</span>(<span class="fu">as.numeric</span>(sres[<span class="dv">1</span>,<span class="st">"avg_exp_pm"</span>]), <span class="at">scientific=</span>F))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Average Expense per PM : 0.00003329888"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Average FuelProf per PM:"</span>, <span class="fu">format</span>(<span class="fu">as.numeric</span>(sres[<span class="dv">1</span>,<span class="st">"avg_fuel_pm"</span>]), <span class="at">scientific =</span> F))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Average FuelProf per PM: 0.0000009436376"</code></pre>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

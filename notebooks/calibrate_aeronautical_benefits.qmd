@@ -28,8 +28,7 @@ The last paper provides two useful ways to represent infrastructure costs. Curre
 
 The tables shown below are from the paper and detail out some hypothetical costs for airports of different sizes in present value terms. The first table details costs for refueling trucks and the second for pipelines. Several times in the paper the costs for larger airports coincide quite closely.
 
-![](images/H2_Cost_TableB1.png)
-![](images/H2_Cost_TableB2.png)
+![](images/H2_Cost_TableB1.png) ![](images/H2_Cost_TableB2.png)
 
 In each of the tables the authors detail a cost (in million USD) for each of the primary components of an LH2 refueling setup for an airport demanding 80 kt of LH2 annually and a large airport demanding 400 kt of LH2 per year. A (over?) simplified approach to convert this into our needed function would be to use the two pairs of costs and quantities to form a line. Using the equation of a line we can calculate a curve (see `/data/Investment_Calibration.xlsx`)
 
@@ -221,7 +220,7 @@ Instead of focusing on revenues and expenses separately, we can view and possibl
 # from the data 
 # --------
 #pm_out <- boxplot(joined_df$orig_pm, plot=FALSE)$out
-#prof_df <- joined_df
+prof_df <- joined_df
 #prof_df <- prof_df[-which(prof_df$orig_pm %in% pm_out), ]
 
 # Filter out airports where either revenues or expenses are
